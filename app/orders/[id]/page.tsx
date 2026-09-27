@@ -22,6 +22,7 @@ import {
   CreditCard,
   ArrowRight,
   Home,
+  Printer,
 } from "lucide-react";
 
 export default function OrderConfirmationPage({
@@ -222,25 +223,35 @@ export default function OrderConfirmationPage({
         </Card>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <Link href="/orders" className="flex-1">
-            <Button
-              variant="outline"
-              className="w-full border-gold text-gold hover:bg-gold hover:text-slate-950"
-            >
-              View My Orders
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="/" className="flex-1">
-            <Button
-              variant="outline"
-              className="w-full border-slate-800 text-slate-400 hover:border-gold hover:text-gold"
-            >
-              <Home className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </Link>
+        <div className="space-y-3 mt-8 print:hidden">
+          <Button
+            onClick={() => window.print()}
+            className="w-full gradient-gold text-slate-950 font-bold h-12 text-base hover:opacity-90 shadow-lg shadow-gold/10"
+          >
+            <Printer className="mr-2 h-5 w-5" />
+            Print / Download Official Tax Invoice
+          </Button>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link href="/orders" className="flex-1">
+              <Button
+                variant="outline"
+                className="w-full border-gold text-gold hover:bg-gold hover:text-slate-950 h-11"
+              >
+                View My Orders
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/" className="flex-1">
+              <Button
+                variant="outline"
+                className="w-full border-slate-800 text-slate-400 hover:border-gold hover:text-gold h-11"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

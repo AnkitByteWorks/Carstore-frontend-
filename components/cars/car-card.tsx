@@ -6,6 +6,8 @@ import type { Car as CarType } from "@/lib/types/car";
 import { carsApi } from "@/lib/api/cars";
 import { formatPrice } from "@/lib/utils/format";
 import { getCarFallbackImage } from "@/lib/utils/car-images";
+import { GarageButton } from "./garage-button";
+import { CompareButton } from "./compare-button";
 
 interface CarCardProps {
     car: CarType;
@@ -39,6 +41,11 @@ export function CarCard({ car }: CarCardProps) {
                     <Badge className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-sm text-gold border-gold/50">
                         {car.brand}
                     </Badge>
+
+                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                        <CompareButton car={car} />
+                        <GarageButton car={car} />
+                    </div>
                 </div>
 
                 {/* Content */}

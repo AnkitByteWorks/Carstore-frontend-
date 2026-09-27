@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Car, Search, Menu, LogOut, User as UserIcon, LayoutDashboard, Package } from "lucide-react";
+import {
+  Car,
+  Menu,
+  LogOut,
+  User as UserIcon,
+  LayoutDashboard,
+  Package,
+  Heart,
+  ArrowLeftRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +23,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/lib/store/auth-store";
+import { useGarageStore } from "@/lib/store/garage-store";
+import { useCompareStore } from "@/lib/store/compare-store";
+import { CommandSearch } from "./command-search";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +34,8 @@ export function Navbar() {
   const router = useRouter();
 
   const { user, isAuthenticated, logout, isAdmin } = useAuthStore();
+  const garageCount = useGarageStore((s) => s.items.length);
+  const compareCount = useCompareStore((s) => s.items.length);
 
   const handleLogout = () => {
     logout();
@@ -43,18 +57,36 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-7">
           <Link
             href="/cars"
             className="text-sm font-medium text-slate-300 hover:text-gold transition"
           >
-            Browse Cars
+            Browse Fleet
           </Link>
           <Link
-            href="/brands"
-            className="text-sm font-medium text-slate-300 hover:text-gold transition"
+            href="/compare"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-gold transition"
           >
-            Brands
+            <ArrowLeftRight className="h-4 w-4" />
+            <span>Compare</span>
+            {compareCount > 0 && (
+              <span className="h-4 min-w-4 px-1 rounded-full bg-amber-500/20 text-gold border border-amber-500/40 text-[10px] font-bold flex items-center justify-center">
+                {compareCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/garage"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-gold transition"
+          >
+            <Heart className="h-4 w-4" />
+            <span>My Garage</span>
+            {garageCount > 0 && (
+              <span className="h-4 min-w-4 px-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 text-[10px] font-bold flex items-center justify-center">
+                {garageCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/about"
@@ -66,13 +98,7 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="hidden md:flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-slate-300 hover:text-gold"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
+          <CommandSearch />
 
           {isAuthenticated ? (
             <DropdownMenu>
@@ -104,6 +130,18 @@ export function Navbar() {
                   <UserIcon className="mr-2 h-4 w-4" />
                   My Profile
                 </DropdownMenuItem>
+                <Link href="/garage">
+                  <DropdownMenuItem className="focus:bg-slate-800 focus:text-gold cursor-pointer">
+                    <Heart className="mr-2 h-4 w-4" />
+                    My Garage ({garageCount})
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/compare">
+                  <DropdownMenuItem className="focus:bg-slate-800 focus:text-gold cursor-pointer">
+                    <ArrowLeftRight className="mr-2 h-4 w-4" />
+                    Compare Fleet ({compareCount})
+                  </DropdownMenuItem>
+                </Link>
                 <Link href="/orders">
                   <DropdownMenuItem className="focus:bg-slate-800 focus:text-gold cursor-pointer">
                     <Package className="mr-2 h-4 w-4" />
@@ -158,20 +196,47 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-800 bg-slate-950">
           <div className="container mx-auto flex flex-col gap-4 p-4">
+            <div className="pb-2 border-b border-slate-800">
+              <CommandSearch />
+            </div>
             <Link
               href="/cars"
+              onClick={() => setMobileOpen(false)}
               className="text-sm font-medium text-slate-300 hover:text-gold"
             >
-              Browse Cars
+              Browse Fleet
             </Link>
             <Link
-              href="/brands"
-              className="text-sm font-medium text-slate-300 hover:text-gold"
+              href="/compare"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between text-sm font-medium text-slate-300 hover:text-gold"
             >
-              Brands
+              <span className="flex items-center gap-2">
+                <ArrowLeftRight className="h-4 w-4" /> Compare Fleet
+              </span>
+              {compareCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-gold text-xs font-bold">
+                  {compareCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/garage"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between text-sm font-medium text-slate-300 hover:text-gold"
+            >
+              <span className="flex items-center gap-2">
+                <Heart className="h-4 w-4" /> My Garage
+              </span>
+              {garageCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold">
+                  {garageCount}
+                </span>
+              )}
             </Link>
             <Link
               href="/about"
+              onClick={() => setMobileOpen(false)}
               className="text-sm font-medium text-slate-300 hover:text-gold"
             >
               About

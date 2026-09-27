@@ -18,10 +18,13 @@ import {
   Truck,
   ArrowLeft,
   ShoppingCart,
-  Phone,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils/format";
 import { getCarFallbackImage } from "@/lib/utils/car-images";
+import { GarageButton } from "@/components/cars/garage-button";
+import { CompareButton } from "@/components/cars/compare-button";
+import { EmiCalculator } from "@/components/cars/emi-calculator";
+import { TestDriveModal } from "@/components/cars/test-drive-modal";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -131,9 +134,15 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
           >
             {/* Title + Price */}
             <div>
-              <h1 className="font-playfair text-3xl md:text-4xl font-bold text-white leading-tight mb-3">
-                {car.name}
-              </h1>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
+                <h1 className="font-playfair text-3xl md:text-4xl font-bold text-white leading-tight">
+                  {car.name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 self-start flex-shrink-0">
+                  <CompareButton car={car} showText />
+                  <GarageButton car={car} showText />
+                </div>
+              </div>
               <p className="text-4xl md:text-5xl font-bold text-gradient-gold">
                 {formatPrice(car.price)}
               </p>
@@ -243,16 +252,14 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                 </Button>
               </Link>
 
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full border-gold text-gold hover:bg-gold hover:text-slate-950 font-semibold h-12 text-base"
-              >
-                <Phone className="mr-2 h-5 w-5" />
-                Book a Test Drive
-              </Button>
+              <TestDriveModal car={car} />
             </div>
           </motion.div>
+        </div>
+
+        {/* EMI & Loan Calculator */}
+        <div className="mt-12">
+          <EmiCalculator price={car.price} />
         </div>
 
         {/* Trust Badges */}
