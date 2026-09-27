@@ -1,5 +1,6 @@
 import axios from "axios";
-import { apiClient, API_BASE_URL } from "./client";
+import { apiClient } from "./client";
+import { API_BASE_URL } from "./config";
 
 export interface LoginRequest {
   username: string;

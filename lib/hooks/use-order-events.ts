@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { API_BASE_URL } from "@/lib/api/client";
+import { getApiBaseUrl } from "@/lib/api/config";
 import type { Order } from "@/lib/api/orders";
 
 interface UseOrderEventsOptions {
@@ -22,7 +22,8 @@ export function useOrderEvents({
   onStatusUpdateRef.current = onStatusUpdate;
 
   useEffect(() => {
-    if (!enabled || !orderId) return;
+    const numericOrderId = Number(orderId);
+    if (!enabled || !orderId || isNaN(numericOrderId)) return;
 
     let isMounted = true;
     let abortController: AbortController | null = null;
@@ -33,9 +34,10 @@ export function useOrderEvents({
 
       abortController = new AbortController();
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const baseUrl = (getApiBaseUrl() || "http://localhost:8080").replace(/\/$/, "");
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/events`, {
+        const response = await fetch(`${baseUrl}/api/orders/${numericOrderId}/events`, {
           signal: abortController.signal,
           headers: {
             Accept: "text/event-stream",

@@ -1,11 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store/auth-store";
+import { API_BASE_URL } from "./config";
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://project-luxury-carstore-production.up.railway.app"
-    : "http://localhost:8080");
+export { API_BASE_URL };
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
