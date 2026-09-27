@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils/format";
+import { getCarFallbackImage } from "@/lib/utils/car-images";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -90,15 +91,23 @@ export default function OrderConfirmationPage({
 
         <Card className="bg-slate-900 border-slate-800 overflow-hidden">
           {/* Image */}
-          {order.carImageUrl && (
-            <div className="aspect-[16/9] overflow-hidden bg-slate-800">
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${order.carImageUrl}`}
-                alt={order.carName}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          <div className="aspect-[16/9] overflow-hidden bg-slate-800">
+            <img
+              src={
+                order.carImageUrl
+                  ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://project-luxury-carstore-production.up.railway.app" : "http://localhost:8080")}${order.carImageUrl}`
+                  : getCarFallbackImage(order.carId)
+              }
+              alt={order.carName}
+              onError={(e) => {
+                const fallback = getCarFallbackImage(order.carId);
+                if (e.currentTarget.src !== fallback) {
+                  e.currentTarget.src = fallback;
+                }
+              }}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
           <div className="p-6 space-y-6">
             {/* Car + Status */}

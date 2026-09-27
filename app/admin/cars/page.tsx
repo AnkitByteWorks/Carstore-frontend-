@@ -10,11 +10,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils/format";
+import { getCarFallbackImage } from "@/lib/utils/car-images";
 import {
   Plus,
   Edit,
   Trash2,
-  Image as ImageIcon,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -91,17 +91,21 @@ export default function AdminCarsPage() {
               <div className="flex flex-col md:flex-row md:items-center gap-4 p-4">
                 {/* Image */}
                 <div className="w-full md:w-24 aspect-[16/10] md:aspect-square rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
-                  {car.hasImage ? (
-                    <img
-                      src={carsApi.getImageUrl(car.id)}
-                      alt={car.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-600">
-                      <ImageIcon className="h-6 w-6" />
-                    </div>
-                  )}
+                  <img
+                    src={
+                      car.hasImage
+                        ? carsApi.getImageUrl(car.id)
+                        : getCarFallbackImage(car.id, car.brand)
+                    }
+                    alt={car.name}
+                    onError={(e) => {
+                      const fallback = getCarFallbackImage(car.id, car.brand);
+                      if (e.currentTarget.src !== fallback) {
+                        e.currentTarget.src = fallback;
+                      }
+                    }}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
                 {/* Info */}

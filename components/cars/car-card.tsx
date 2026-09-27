@@ -1,32 +1,37 @@
 import Link from "next/link";
-import { Car, MapPin, Clock } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Car as CarType } from "@/lib/types/car";
 import { carsApi } from "@/lib/api/cars";
 import { formatPrice } from "@/lib/utils/format";
+import { getCarFallbackImage } from "@/lib/utils/car-images";
 
 interface CarCardProps {
     car: CarType;
 }
 
 export function CarCard({ car }: CarCardProps) {
+    const imageUrl = car.hasImage
+        ? carsApi.getImageUrl(car.id)
+        : getCarFallbackImage(car.id, car.brand);
+
     return (
         <Link href={`/cars/${car.id}`}>
             <Card className="group overflow-hidden bg-slate-900 border border-slate-800 hover:border-gold/50 transition-all duration-500 hover:shadow-2xl hover:shadow-gold/20 hover:-translate-y-1 cursor-pointer">
                 {/* Image */}
                 <div className="relative aspect-[16/10] max-h-[220px] overflow-hidden bg-slate-800">
-                    {car.hasImage ? (
-                        <img
-                            src={carsApi.getImageUrl(car.id)}
-                            alt={car.name}
-                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                    ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-                            <Car className="h-16 w-16 text-slate-700" />
-                        </div>
-                    )}
+                    <img
+                        src={imageUrl}
+                        alt={car.name}
+                        onError={(e) => {
+                            const fallback = getCarFallbackImage(car.id, car.brand);
+                            if (e.currentTarget.src !== fallback) {
+                                e.currentTarget.src = fallback;
+                            }
+                        }}
+                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
 
                     {/* Gradient overlay at bottom */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />

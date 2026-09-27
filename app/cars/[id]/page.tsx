@@ -21,6 +21,7 @@ import {
   Phone,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils/format";
+import { getCarFallbackImage } from "@/lib/utils/car-images";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -100,17 +101,21 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
             className="lg:col-span-3"
           >
             <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
-              {car.hasImage ? (
-                <img
-                  src={carsApi.getImageUrl(car.id)}
-                  alt={car.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-slate-700">
-                  No image available
-                </div>
-              )}
+              <img
+                src={
+                  car.hasImage
+                    ? carsApi.getImageUrl(car.id)
+                    : getCarFallbackImage(car.id, car.brand)
+                }
+                alt={car.name}
+                onError={(e) => {
+                  const fallback = getCarFallbackImage(car.id, car.brand);
+                  if (e.currentTarget.src !== fallback) {
+                    e.currentTarget.src = fallback;
+                  }
+                }}
+                className="h-full w-full object-cover"
+              />
               <Badge className="absolute top-4 left-4 bg-slate-950/90 backdrop-blur-sm text-gold border-gold/50 text-sm px-3 py-1">
                 {car.brand}
               </Badge>
@@ -308,17 +313,21 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                   <Link href={`/cars/${c.id}`}>
                     <div className="group rounded-xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-gold/50 transition-all duration-300 cursor-pointer">
                       <div className="aspect-[16/10] overflow-hidden bg-slate-800">
-                        {c.hasImage ? (
-                          <img
-                            src={carsApi.getImageUrl(c.id)}
-                            alt={c.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-600">
-                            No image
-                          </div>
-                        )}
+                        <img
+                          src={
+                            c.hasImage
+                              ? carsApi.getImageUrl(c.id)
+                              : getCarFallbackImage(c.id, c.brand)
+                          }
+                          alt={c.name}
+                          onError={(e) => {
+                            const fallback = getCarFallbackImage(c.id, c.brand);
+                            if (e.currentTarget.src !== fallback) {
+                              e.currentTarget.src = fallback;
+                            }
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       </div>
                       <div className="p-4">
                         <h3 className="font-playfair text-lg font-bold text-white group-hover:text-gold transition line-clamp-1">

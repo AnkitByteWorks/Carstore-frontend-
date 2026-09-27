@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://project-luxury-carstore-production.up.railway.app"
+    : "http://localhost:8080");
 
 export const apiClient = axios.create({
     baseURL: API_URL,

@@ -68,6 +68,11 @@ export const carsApi = {
 
   // Image URL helper
   getImageUrl: (id: number): string => {
-    return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/cars/${id}/image`;
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === "production"
+        ? "https://project-luxury-carstore-production.up.railway.app"
+        : "http://localhost:8080");
+    return `${baseUrl}/api/cars/${id}/image`;
   },
 };

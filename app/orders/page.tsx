@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils/format";
+import { getCarFallbackImage } from "@/lib/utils/car-images";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -101,17 +102,21 @@ export default function MyOrdersPage() {
                     <div className="flex flex-col md:flex-row">
                       {/* Image */}
                       <div className="md:w-48 aspect-[16/10] md:aspect-square overflow-hidden bg-slate-800 flex-shrink-0">
-                        {order.carImageUrl ? (
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${order.carImageUrl}`}
-                            alt={order.carName}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-600">
-                            No image
-                          </div>
-                        )}
+                        <img
+                          src={
+                            order.carImageUrl
+                              ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://project-luxury-carstore-production.up.railway.app" : "http://localhost:8080")}${order.carImageUrl}`
+                              : getCarFallbackImage(order.carId)
+                          }
+                          alt={order.carName}
+                          onError={(e) => {
+                            const fallback = getCarFallbackImage(order.carId);
+                            if (e.currentTarget.src !== fallback) {
+                              e.currentTarget.src = fallback;
+                            }
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       </div>
 
                       {/* Content */}

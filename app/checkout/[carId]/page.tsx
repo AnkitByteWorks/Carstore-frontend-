@@ -11,6 +11,7 @@ import { carsApi } from "@/lib/api/cars";
 import { ordersApi } from "@/lib/api/orders";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { toast } from "sonner";
+import { getCarFallbackImage } from "@/lib/utils/car-images";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -352,17 +353,21 @@ export default function CheckoutPage({
           >
             <Card className="bg-slate-900 border-slate-800 overflow-hidden sticky top-24">
               <div className="aspect-[16/10] overflow-hidden bg-slate-800">
-                {car.hasImage ? (
-                  <img
-                    src={carsApi.getImageUrl(car.id)}
-                    alt={car.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-600">
-                    No image
-                  </div>
-                )}
+                <img
+                  src={
+                    car.hasImage
+                      ? carsApi.getImageUrl(car.id)
+                      : getCarFallbackImage(car.id, car.brand)
+                  }
+                  alt={car.name}
+                  onError={(e) => {
+                    const fallback = getCarFallbackImage(car.id, car.brand);
+                    if (e.currentTarget.src !== fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div className="p-6 space-y-4">
