@@ -1,0 +1,11 @@
+export function formatPrice(price: number): string {
+  if (price >= 10000000) {
+    // Crore
+    return `₹${(price / 10000000).toFixed(2)} Cr`;
+  }
+  if (price >= 100000) {
+    // Lakh
+    return `₹${(price / 100000).toFixed(2)} L`;
+  }
+  return `₹${price.toLocaleString("en-IN")}`;
+}
