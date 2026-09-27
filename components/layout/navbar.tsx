@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/lib/store/auth-store";
+import { authApi } from "@/lib/api/auth";
 import { useGarageStore } from "@/lib/store/garage-store";
 import { useCompareStore } from "@/lib/store/compare-store";
 import { CommandSearch } from "./command-search";
@@ -33,11 +34,20 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
 
-  const { user, isAuthenticated, logout, isAdmin } = useAuthStore();
+  const { user, isAuthenticated, logout, isAdmin, refreshToken } = useAuthStore();
   const garageCount = useGarageStore((s) => s.items.length);
   const compareCount = useCompareStore((s) => s.items.length);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const currentRefreshToken =
+      refreshToken ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("refreshToken")
+        : null);
+
+    if (currentRefreshToken) {
+      await authApi.logout(currentRefreshToken);
+    }
     logout();
     toast.success("Logged out successfully");
     router.push("/");

@@ -18,11 +18,13 @@ import { formatPrice } from "@/lib/utils/format";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
+import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 
-const STATUSES = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"];
+const STATUSES = ["PENDING", "PROCESSING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"];
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
+  PROCESSING: "bg-amber-500/20 text-amber-400 border-amber-500/50",
   CONFIRMED: "bg-blue-500/20 text-blue-400 border-blue-500/50",
   SHIPPED: "bg-purple-500/20 text-purple-400 border-purple-500/50",
   DELIVERED: "bg-green-500/20 text-green-400 border-green-500/50",
@@ -117,7 +119,14 @@ export default function AdminOrdersPage() {
                   </p>
                 </div>
 
-                <div className="flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
+                  <DownloadInvoiceButton
+                    orderId={order.id}
+                    variant="outline"
+                    size="sm"
+                    className="h-10 text-xs border-slate-800 hover:border-gold text-slate-300 hover:text-gold"
+                    label="PDF Invoice"
+                  />
                   <Select
                     value={order.status}
                     onValueChange={(v) => handleStatusChange(order.id, v)}

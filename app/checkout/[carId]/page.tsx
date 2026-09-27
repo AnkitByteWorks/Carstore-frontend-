@@ -39,6 +39,8 @@ import {
 import { formatPrice } from "@/lib/utils/format";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { paymentsApi, type PaymentIntentResponse } from "@/lib/api/payments";
+import { LuxuryPaymentModal } from "@/components/checkout/luxury-payment-modal";
 
 const checkoutSchema = z.object({
   customerName: z.string().min(2, "Name is required"),
@@ -63,6 +65,9 @@ export default function CheckoutPage({
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntentResponse | null>(null);
+  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const { data: car, isLoading } = useQuery({
     queryKey: ["car", carId],
@@ -104,8 +109,18 @@ export default function CheckoutPage({
         ...data,
       });
 
-      toast.success("Order placed successfully! 🎉");
-      router.push(`/orders/${order.id}`);
+      toast.success("Order placed successfully! Initializing luxury payment...");
+
+      // Sandbox Luxury Payment Intent creation
+      try {
+        const intent = await paymentsApi.createIntent(order.id, data.paymentMethod || "CARD");
+        setPaymentIntent(intent);
+        setCreatedOrderId(order.id);
+        setShowPaymentModal(true);
+      } catch (paymentErr) {
+        console.warn("Payment intent initialization skipped:", paymentErr);
+        router.push(`/orders/${order.id}`);
+      }
     } catch (error: unknown) {
       const message =
         axios.isAxiosError(error) && error.response?.data?.message
@@ -418,6 +433,23 @@ export default function CheckoutPage({
           </motion.div>
         </div>
       </div>
+
+      {paymentIntent && createdOrderId && (
+        <LuxuryPaymentModal
+          open={showPaymentModal}
+          onOpenChange={(isOpen) => {
+            setShowPaymentModal(isOpen);
+            if (!isOpen) {
+              router.push(`/orders/${createdOrderId}`);
+            }
+          }}
+          intent={paymentIntent}
+          orderId={createdOrderId}
+          onSuccess={() => {
+            // modal handles redirect to orders
+          }}
+        />
+      )}
 
       <Footer />
     </main>

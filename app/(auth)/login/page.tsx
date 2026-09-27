@@ -40,7 +40,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const response = await authApi.login(data);
-      login(response.token, {
+      login(response.token, response.refreshToken, {
         id: response.userId,
         username: response.username,
         email: response.email,

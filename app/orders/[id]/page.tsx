@@ -1,8 +1,13 @@
 "use client";
 
-import { use } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { ordersApi } from "@/lib/api/orders";
+import { use, useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ordersApi, type Order, type OrderStatusType } from "@/lib/api/orders";
+import { paymentsApi, type PaymentIntentResponse } from "@/lib/api/payments";
+import { useOrderEvents } from "@/lib/hooks/use-order-events";
+import { OrderTrackingStepper } from "@/components/orders/order-tracking-stepper";
+import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
+import { LuxuryPaymentModal } from "@/components/checkout/luxury-payment-modal";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -23,26 +28,71 @@ import {
   ArrowRight,
   Home,
   Printer,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
-export default function OrderConfirmationPage({
+export default function OrderDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const queryClient = useQueryClient();
+  const orderId = Number(id);
+
+  const [currentStatus, setCurrentStatus] = useState<OrderStatusType>("PENDING");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntentResponse | null>(null);
+  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", id],
-    queryFn: () => ordersApi.getById(Number(id)),
+    queryFn: () => ordersApi.getById(orderId),
     enabled: !!id,
   });
+
+  // Sync initial status from fetch
+  useEffect(() => {
+    if (order?.status) {
+      setCurrentStatus(order.status);
+    }
+  }, [order?.status]);
+
+  // Connect to SSE stream: GET http://localhost:8080/api/orders/{id}/events
+  const { isConnected } = useOrderEvents({
+    orderId,
+    enabled: !!orderId,
+    onStatusUpdate: (updatedOrder: Order) => {
+      if (updatedOrder.status) {
+        setCurrentStatus(updatedOrder.status);
+        queryClient.setQueryData(["order", id], updatedOrder);
+        toast.info(`🔔 Order Status Update: ${updatedOrder.status}`, {
+          description: `Live update received for Order #${orderId}`,
+        });
+      }
+    },
+  });
+
+  const handleOpenPayment = async () => {
+    setIsInitializingPayment(true);
+    try {
+      const intent = await paymentsApi.createIntent(orderId, order?.paymentMethod || "CARD");
+      setPaymentIntent(intent);
+      setShowPaymentModal(true);
+    } catch (err: unknown) {
+      toast.error("Failed to initialize payment gateway. Please try again.");
+    } finally {
+      setIsInitializingPayment(false);
+    }
+  };
 
   if (isLoading) {
     return (
       <main className="min-h-screen bg-slate-950">
         <Navbar />
-        <div className="max-w-3xl mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto px-4 py-20">
           <Skeleton className="h-96 w-full bg-slate-900 rounded-2xl" />
         </div>
       </main>
@@ -53,15 +103,16 @@ export default function OrderConfirmationPage({
     return (
       <main className="min-h-screen bg-slate-950">
         <Navbar />
-        <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+        <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <h1 className="font-playfair text-3xl text-white">Order not found</h1>
         </div>
       </main>
     );
   }
 
-  const statusColors = {
+  const statusColors: Record<OrderStatusType, string> = {
     PENDING: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
+    PROCESSING: "bg-amber-500/20 text-amber-400 border-amber-500/50",
     CONFIRMED: "bg-blue-500/20 text-blue-400 border-blue-500/50",
     SHIPPED: "bg-purple-500/20 text-purple-400 border-purple-500/50",
     DELIVERED: "bg-green-500/20 text-green-400 border-green-500/50",
@@ -72,188 +123,240 @@ export default function OrderConfirmationPage({
     <main className="min-h-screen bg-slate-950">
       <Navbar />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
         >
-          <div className="w-20 h-20 mx-auto rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-6">
-            <CheckCircle2 className="h-10 w-10 text-green-400" />
+          <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
+            <CheckCircle2 className="h-8 w-8 text-emerald-400" />
           </div>
-          <h1 className="font-playfair text-4xl font-bold text-white mb-3">
-            Order Confirmed!
+          <span className="text-xs uppercase tracking-widest text-gold font-semibold">
+            Order Reference #{order.id}
+          </span>
+          <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-white mt-1">
+            {currentStatus === "CONFIRMED"
+              ? "Order Confirmed & Allocated"
+              : currentStatus === "DELIVERED"
+              ? "Vehicle Handed Over"
+              : currentStatus === "CANCELLED"
+              ? "Order Cancelled"
+              : "Order Placed Successfully"}
           </h1>
-          <p className="text-slate-400">
-            Thank you for your purchase. Order #{order.id}
+          <p className="text-slate-400 text-sm mt-1">
+            Thank you for choosing Carstore. Live tracking updates are active below.
           </p>
         </motion.div>
 
+        {/* Real-time SSE Live Order Tracking Stepper */}
+        <OrderTrackingStepper status={currentStatus} isConnected={isConnected} />
+
+        {/* Pending Payment Callout (if order is still PENDING) */}
+        {currentStatus === "PENDING" && (
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold uppercase tracking-wider">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Sandbox Payment Ready</span>
+              </div>
+              <p className="text-sm font-medium text-white mt-0.5">
+                Complete your checkout simulation to trigger immediate vehicle allocation
+              </p>
+              <p className="text-xs text-slate-400">
+                Amount payable: <span className="text-gold font-semibold">{formatPrice(order.totalAmount)}</span>
+              </p>
+            </div>
+            <Button
+              onClick={handleOpenPayment}
+              disabled={isInitializingPayment}
+              className="gradient-gold text-slate-950 font-bold px-6 shadow-md shadow-gold/20 flex-shrink-0"
+            >
+              {isInitializingPayment ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Pay Now (Sandbox)
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Order Details Card */}
         <Card className="bg-slate-900 border-slate-800 overflow-hidden">
-          {/* Image */}
-          <div className="aspect-[16/9] overflow-hidden bg-slate-800">
-            <img
-              src={
-                order.carImageUrl
-                  ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://project-luxury-carstore-production.up.railway.app" : "http://localhost:8080")}${order.carImageUrl}`
-                  : getCarFallbackImage(order.carId)
-              }
-              alt={order.carName}
-              onError={(e) => {
-                const fallback = getCarFallbackImage(order.carId);
-                if (e.currentTarget.src !== fallback) {
-                  e.currentTarget.src = fallback;
+          {/* Vehicle Header */}
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            <div className="aspect-[16/10] md:aspect-auto overflow-hidden bg-slate-800">
+              <img
+                src={
+                  order.carImageUrl
+                    ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://project-luxury-carstore-production.up.railway.app" : "http://localhost:8080")}${order.carImageUrl}`
+                    : getCarFallbackImage(order.carId)
                 }
-              }}
-              className="w-full h-full object-cover"
-            />
+                alt={order.carName}
+                onError={(e) => {
+                  const fallback = getCarFallbackImage(order.carId);
+                  if (e.currentTarget.src !== fallback) {
+                    e.currentTarget.src = fallback;
+                  }
+                }}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="p-6 md:col-span-2 space-y-4 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="font-playfair text-2xl font-bold text-white">
+                      {order.carName}
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Placed on{" "}
+                      {new Date(order.orderedAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <Badge
+                    className={`${statusColors[currentStatus]} border text-xs px-3 py-1 font-semibold`}
+                  >
+                    {currentStatus}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
+                  <div>
+                    <span className="text-xs text-slate-500 uppercase">Unit Price</span>
+                    <p className="text-white font-medium">{formatPrice(order.unitPrice)}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 uppercase">Quantity</span>
+                    <p className="text-white font-medium">{order.quantity}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 uppercase">Transit Logistics</span>
+                    <p className="text-white font-medium">Free Covered Transport</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 uppercase">Total Settled</span>
+                    <p className="text-xl font-bold text-gradient-gold">
+                      {formatPrice(order.totalAmount)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="p-6 space-y-6">
-            {/* Car + Status */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="font-playfair text-2xl font-bold text-white">
-                  {order.carName}
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Order placed on{" "}
-                  {new Date(order.orderedAt).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
+          <Separator className="bg-slate-800" />
+
+          {/* Delivery & Customer Info Grid */}
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <User className="h-4 w-4 text-gold" />
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Client Concierge
+                </h3>
               </div>
-              <Badge
-                className={
-                  statusColors[order.status] + " border text-xs px-3 py-1"
-                }
-              >
-                {order.status}
-              </Badge>
+              <p className="text-white font-medium">{order.customerName}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{order.customerEmail}</p>
+              <p className="text-xs text-slate-400">{order.customerPhone}</p>
             </div>
 
-            <Separator className="bg-slate-800" />
-
-            {/* Price breakdown */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Unit Price</span>
-                <span className="text-white">
-                  {formatPrice(order.unitPrice)}
-                </span>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-4 w-4 text-gold" />
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Delivery Destination
+                </h3>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Quantity</span>
-                <span className="text-white">{order.quantity}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Delivery</span>
-                <span className="text-white">Free</span>
-              </div>
-              <Separator className="bg-slate-800 my-2" />
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-slate-300 font-medium">Total</span>
-                <span className="text-2xl font-bold text-gradient-gold">
-                  {formatPrice(order.totalAmount)}
-                </span>
-              </div>
+              <p className="text-white font-medium">{order.deliveryAddress}</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {order.deliveryCity} — {order.deliveryPincode}
+              </p>
             </div>
 
-            <Separator className="bg-slate-800" />
-
-            {/* Details grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <User className="h-4 w-4 text-gold" />
-                  <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
-                    Customer
-                  </h3>
-                </div>
-                <p className="text-white font-medium">{order.customerName}</p>
-                <p className="text-sm text-slate-500">
-                  {order.customerEmail}
-                </p>
-                <p className="text-sm text-slate-500">
-                  {order.customerPhone}
-                </p>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard className="h-4 w-4 text-gold" />
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Payment Method
+                </h3>
               </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="h-4 w-4 text-gold" />
-                  <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
-                    Delivery
-                  </h3>
-                </div>
-                <p className="text-white">{order.deliveryAddress}</p>
-                <p className="text-sm text-slate-500">
-                  {order.deliveryCity} — {order.deliveryPincode}
-                </p>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <CreditCard className="h-4 w-4 text-gold" />
-                  <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
-                    Payment
-                  </h3>
-                </div>
-                <p className="text-white">{order.paymentMethod}</p>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Package className="h-4 w-4 text-gold" />
-                  <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
-                    Status
-                  </h3>
-                </div>
-                <p className="text-white">{order.status}</p>
-                <p className="text-sm text-slate-500">
-                  Last updated{" "}
-                  {new Date(order.updatedAt).toLocaleString("en-IN")}
-                </p>
-              </div>
+              <p className="text-white font-medium">{order.paymentMethod}</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Updated {new Date(order.updatedAt).toLocaleTimeString("en-IN")}
+              </p>
             </div>
           </div>
         </Card>
 
-        {/* Actions */}
-        <div className="space-y-3 mt-8 print:hidden">
-          <Button
-            onClick={() => window.print()}
-            className="w-full gradient-gold text-slate-950 font-bold h-12 text-base hover:opacity-90 shadow-lg shadow-gold/10"
-          >
-            <Printer className="mr-2 h-5 w-5" />
-            Print / Download Official Tax Invoice
-          </Button>
+        {/* Primary Actions: Download PDF Tax Invoice */}
+        <div className="space-y-4 print:hidden">
+          <DownloadInvoiceButton
+            orderId={order.id}
+            variant="default"
+            size="lg"
+            className="w-full gradient-gold text-slate-950 font-bold h-13 text-base shadow-xl shadow-gold/10 hover:opacity-90"
+            label="📄 Download Tax Invoice (PDF)"
+          />
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/orders" className="flex-1">
               <Button
                 variant="outline"
-                className="w-full border-gold text-gold hover:bg-gold hover:text-slate-950 h-11"
+                className="w-full border-slate-700 text-slate-300 hover:border-gold hover:text-gold h-11"
               >
-                View My Orders
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <Package className="mr-2 h-4 w-4" />
+                View All Orders
               </Button>
             </Link>
+
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
+              className="flex-1 border-slate-800 text-slate-400 hover:text-white h-11"
+            >
+              <Printer className="mr-2 h-4 w-4" />
+              Print Receipt
+            </Button>
+
             <Link href="/" className="flex-1">
               <Button
                 variant="outline"
-                className="w-full border-slate-800 text-slate-400 hover:border-gold hover:text-gold h-11"
+                className="w-full border-slate-800 text-slate-400 hover:text-white h-11"
               >
                 <Home className="mr-2 h-4 w-4" />
-                Back to Home
+                Return to Showroom
               </Button>
             </Link>
           </div>
         </div>
       </div>
+
+      {/* Luxury Payment Modal */}
+      {paymentIntent && (
+        <LuxuryPaymentModal
+          open={showPaymentModal}
+          onOpenChange={setShowPaymentModal}
+          intent={paymentIntent}
+          orderId={orderId}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["order", id] });
+          }}
+        />
+      )}
 
       <Footer />
     </main>

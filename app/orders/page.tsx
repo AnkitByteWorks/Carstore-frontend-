@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
+import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 
 export default function MyOrdersPage() {
   const { user, isAuthenticated } = useAuthStore();
@@ -37,6 +38,7 @@ export default function MyOrdersPage() {
 
   const statusColors = {
     PENDING: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
+    PROCESSING: "bg-amber-500/20 text-amber-400 border-amber-500/50",
     CONFIRMED: "bg-blue-500/20 text-blue-400 border-blue-500/50",
     SHIPPED: "bg-purple-500/20 text-purple-400 border-purple-500/50",
     DELIVERED: "bg-green-500/20 text-green-400 border-green-500/50",
@@ -148,7 +150,7 @@ export default function MyOrdersPage() {
                           </p>
                         </div>
 
-                        <div className="flex items-end justify-between mt-4">
+                        <div className="flex flex-wrap items-end justify-between gap-3 mt-4 pt-3 border-t border-slate-800/60">
                           <div>
                             <p className="text-xs text-slate-500 uppercase">
                               Total Amount
@@ -157,10 +159,18 @@ export default function MyOrdersPage() {
                               {formatPrice(order.totalAmount)}
                             </p>
                           </div>
-                          <span className="text-xs text-gold flex items-center gap-1">
-                            View Details
-                            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <DownloadInvoiceButton
+                              orderId={order.id}
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs border-slate-700 hover:border-gold text-slate-300 hover:text-gold"
+                            />
+                            <span className="text-xs text-gold flex items-center gap-1 font-medium">
+                              View Details
+                              <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

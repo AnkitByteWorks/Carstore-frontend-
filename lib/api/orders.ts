@@ -12,6 +12,14 @@ export interface OrderRequest {
   paymentMethod: string;
 }
 
+export type OrderStatusType =
+  | "PENDING"
+  | "PROCESSING"
+  | "CONFIRMED"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED";
+
 export interface Order {
   id: number;
   carId: number;
@@ -27,7 +35,7 @@ export interface Order {
   deliveryCity: string;
   deliveryPincode: string;
   paymentMethod: string;
-  status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  status: OrderStatusType;
   orderedAt: string;
   updatedAt: string;
 }
@@ -72,5 +80,21 @@ export const ordersApi = {
   cancel: async (id: number): Promise<Order> => {
     const response = await apiClient.put(`/api/orders/${id}/cancel`);
     return response.data;
+  },
+
+  downloadInvoice: async (id: number): Promise<void> => {
+    const response = await apiClient.get(`/api/orders/${id}/invoice`, {
+      responseType: "blob",
+    });
+
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.setAttribute("download", `Carstore-Invoice-ORD-${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
   },
 };

@@ -56,7 +56,7 @@ export default function RegisterPage() {
         password: data.password,
         fullName: data.fullName,
       });
-      login(response.token, {
+      login(response.token, response.refreshToken, {
         id: response.userId,
         username: response.username,
         email: response.email,
