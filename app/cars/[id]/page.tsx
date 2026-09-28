@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { carsApi } from "@/lib/api/cars";
 import { Navbar } from "@/components/layout/navbar";
@@ -34,6 +34,13 @@ interface CarDetailPageProps {
 
 export default function CarDetailPage({ params }: CarDetailPageProps) {
   const { id } = use(params);
+
+  // Record view in Redis for trending analytics
+  useEffect(() => {
+    if (id && !isNaN(Number(id))) {
+      carsApi.recordView(Number(id)).catch(() => {});
+    }
+  }, [id]);
 
   const { data: car, isLoading, error } = useQuery({
     queryKey: ["car", id],

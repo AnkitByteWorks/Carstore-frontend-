@@ -66,6 +66,17 @@ export const carsApi = {
     return data;
   },
 
+  // Get trending cars (backed by Redis Sorted Sets)
+  getTrending: async (): Promise<Car[]> => {
+    const { data } = await apiClient.get("/api/cars/trending");
+    return data;
+  },
+
+  // Record a view for analytics & trending score in Redis
+  recordView: async (id: number): Promise<void> => {
+    await apiClient.post(`/api/cars/${id}/view`);
+  },
+
   // Image URL helper
   getImageUrl: (id: number): string => {
     const baseUrl =

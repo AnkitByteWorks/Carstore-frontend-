@@ -78,11 +78,15 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
       setBookingResult(response);
       toast.success("VIP Test Drive appointment confirmed!");
     } catch (error: unknown) {
-      const message =
-        axios.isAxiosError(error) && error.response?.data?.message
-          ? error.response.data.message
-          : "Failed to book test drive. Please check details and try again.";
-      toast.error(message);
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        toast.error("⚠️ Slot Unavailable: This VIP appointment slot was just reserved by another client under concurrent demand. Please select another slot.");
+      } else {
+        const message =
+          axios.isAxiosError(error) && error.response?.data?.message
+            ? error.response.data.message
+            : "Failed to book test drive. Please check details and try again.";
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
