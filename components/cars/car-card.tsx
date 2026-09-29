@@ -14,11 +14,13 @@ interface CarCardProps {
 }
 
 export function CarCard({ car }: CarCardProps) {
+    const isBugatti = car.brand?.toLowerCase() === "bugatti" || car.name?.toLowerCase().includes("chiron");
     const fallbackImage = getCarFallbackImage(car.id, car.brand);
-    // If backend provided an external CDN imageUrl, use it; otherwise use local public car image
-    const imageUrl = car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
-        ? car.imageUrl
-        : fallbackImage;
+    const imageUrl = isBugatti
+        ? fallbackImage
+        : (car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
+            ? car.imageUrl
+            : fallbackImage);
 
     return (
         <Link href={`/cars/${car.id}`}>

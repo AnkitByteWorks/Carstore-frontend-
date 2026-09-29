@@ -385,9 +385,11 @@ function CheckoutContent({
               <div className="aspect-[16/10] overflow-hidden bg-slate-800">
                 <img
                   src={
-                    car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
-                      ? car.imageUrl
-                      : getCarFallbackImage(car.id, car.brand)
+                    car.brand?.toLowerCase() === "bugatti" || car.name?.toLowerCase().includes("chiron")
+                      ? getCarFallbackImage(car.id, car.brand)
+                      : (car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
+                          ? car.imageUrl
+                          : getCarFallbackImage(car.id, car.brand))
                   }
                   alt={car.name}
                   onError={(e) => {

@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils/format";
 import { getCarFallbackImage } from "@/lib/utils/car-images";
+import { getApiBaseUrl } from "@/lib/api/config";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -106,9 +107,11 @@ export default function MyOrdersPage() {
                       <div className="md:w-48 aspect-[16/10] md:aspect-square overflow-hidden bg-slate-800 flex-shrink-0">
                         <img
                           src={
-                            order.carImageUrl
-                              ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://project-luxury-carstore-production.up.railway.app" : "http://localhost:8080")}${order.carImageUrl}`
-                              : getCarFallbackImage(order.carId)
+                            order.carName?.toLowerCase().includes("chiron")
+                              ? getCarFallbackImage(5, "bugatti")
+                              : (order.carImageUrl
+                                  ? `${getApiBaseUrl()}${order.carImageUrl}`
+                                  : getCarFallbackImage(order.carId))
                           }
                           alt={order.carName}
                           onError={(e) => {
