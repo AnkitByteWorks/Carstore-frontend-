@@ -21,6 +21,8 @@ import {
   Wifi,
   ArrowRight,
   Lock,
+  QrCode,
+  Smartphone,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils/format";
 import { paymentsApi, type PaymentIntentResponse } from "@/lib/api/payments";
@@ -53,6 +55,8 @@ export function LuxuryPaymentModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [copiedSecret, setCopiedSecret] = useState(false);
+  const [paymentTab, setPaymentTab] = useState<"card" | "upi">("card");
+  const [copiedUpi, setCopiedUpi] = useState(false);
 
   // Real-time SSE listener waiting for ORDER_STATUS_UPDATE -> CONFIRMED
   useOrderEvents({
@@ -75,6 +79,13 @@ export function LuxuryPaymentModal({
       toast.success("Client Secret copied to clipboard!");
       setTimeout(() => setCopiedSecret(false), 2000);
     }
+  };
+
+  const handleCopyUpi = () => {
+    navigator.clipboard.writeText("carstore.bespoke@icici");
+    setCopiedUpi(true);
+    toast.success("UPI ID copied to clipboard!");
+    setTimeout(() => setCopiedUpi(false), 2000);
   };
 
   const handleCompletePayment = async () => {
@@ -200,124 +211,304 @@ export function LuxuryPaymentModal({
                 exit={{ opacity: 0 }}
                 className="space-y-6"
               >
-                {/* Virtual Luxury Black Card */}
-                <div className="relative rounded-2xl p-6 bg-gradient-to-tr from-slate-950 via-zinc-900 to-slate-900 border border-gold/30 shadow-2xl overflow-hidden text-white font-mono">
-                  {/* Decorative card glow */}
-                  <div className="absolute -top-12 -right-12 w-36 h-36 bg-gold/10 rounded-full blur-2xl pointer-events-none" />
+                {/* Payment Method Switcher Tabs */}
+                <div className="flex rounded-xl bg-slate-900 p-1 border border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTab("card")}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
+                      paymentTab === "card"
+                        ? "bg-gold text-slate-950 shadow-md font-bold"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Black VIP Card
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTab("upi")}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
+                      paymentTab === "upi"
+                        ? "bg-gold text-slate-950 shadow-md font-bold"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <QrCode className="h-4 w-4" />
+                    Instant UPI QR
+                  </button>
+                </div>
 
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-7 rounded bg-amber-400/80 bg-gradient-to-br from-yellow-300 to-amber-600 border border-yellow-200/50 flex items-center justify-center shadow-inner">
-                        <div className="w-5 h-4 border border-amber-800/40 rounded-sm opacity-60" />
+                {paymentTab === "card" ? (
+                  <>
+                    {/* Virtual Luxury Black Card */}
+                    <div className="relative rounded-2xl p-6 bg-gradient-to-tr from-slate-950 via-zinc-900 to-slate-900 border border-gold/30 shadow-2xl overflow-hidden text-white font-mono">
+                      {/* Decorative card glow */}
+                      <div className="absolute -top-12 -right-12 w-36 h-36 bg-gold/10 rounded-full blur-2xl pointer-events-none" />
+
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-9 h-7 rounded bg-amber-400/80 bg-gradient-to-br from-yellow-300 to-amber-600 border border-yellow-200/50 flex items-center justify-center shadow-inner">
+                            <div className="w-5 h-4 border border-amber-800/40 rounded-sm opacity-60" />
+                          </div>
+                          <Wifi className="h-4 w-4 text-slate-400 rotate-90" />
+                        </div>
+                        <span className="text-xs font-serif font-bold tracking-widest text-gradient-gold">
+                          CARSTORE BLACK VIP
+                        </span>
                       </div>
-                      <Wifi className="h-4 w-4 text-slate-400 rotate-90" />
-                    </div>
-                    <span className="text-xs font-serif font-bold tracking-widest text-gradient-gold">
-                      CARSTORE BLACK VIP
-                    </span>
-                  </div>
 
-                  <p className="text-lg sm:text-xl font-bold tracking-widest text-slate-100 my-4">
-                    {cardNumber}
-                  </p>
-
-                  <div className="flex justify-between items-end text-xs text-slate-400 uppercase pt-2">
-                    <div>
-                      <p className="text-[9px] text-slate-500">Cardholder</p>
-                      <p className="text-white font-semibold text-xs tracking-wider">
-                        {cardHolder}
+                      <p className="text-lg sm:text-xl font-bold tracking-widest text-slate-100 my-4">
+                        {cardNumber}
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500">Expires</p>
-                      <p className="text-white font-semibold text-xs">{expiry}</p>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Amount & Client Secret Summary */}
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Total Payable:</span>
-                    <span className="text-lg font-bold text-gradient-gold font-sans">
-                      {formatPrice(intent.amount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-slate-800/80">
-                    <span className="text-slate-400">clientSecret:</span>
-                    <div className="flex items-center gap-1.5">
-                      <code className="text-[11px] font-mono text-slate-300 max-w-[190px] truncate">
-                        {intent.clientSecret}
-                      </code>
-                      <button
-                        type="button"
-                        onClick={handleCopySecret}
-                        className="text-slate-400 hover:text-gold transition p-1"
-                        title="Copy client secret"
+                      <div className="flex justify-between items-end text-xs text-slate-400 uppercase pt-2">
+                        <div>
+                          <p className="text-[9px] text-slate-500">Cardholder</p>
+                          <p className="text-white font-semibold text-xs tracking-wider">
+                            {cardHolder}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-slate-500">Expires</p>
+                          <p className="text-white font-semibold text-xs">{expiry}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Amount & Client Secret Summary */}
+                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Total Payable:</span>
+                        <span className="text-lg font-bold text-gradient-gold font-sans">
+                          {formatPrice(intent.amount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-800/80">
+                        <span className="text-slate-400">clientSecret:</span>
+                        <div className="flex items-center gap-1.5">
+                          <code className="text-[11px] font-mono text-slate-300 max-w-[190px] truncate">
+                            {intent.clientSecret}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={handleCopySecret}
+                            className="text-slate-400 hover:text-gold transition p-1"
+                            title="Copy client secret"
+                          >
+                            {copiedSecret ? (
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Simulated form inputs */}
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-300">Name on Card</Label>
+                        <Input
+                          value={cardHolder}
+                          onChange={(e) => setCardHolder(e.target.value)}
+                          className="bg-slate-900 border-slate-800 text-white h-9 text-xs font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-slate-300">Expiry (MM/YY)</Label>
+                          <Input
+                            value={expiry}
+                            onChange={(e) => setExpiry(e.target.value)}
+                            className="bg-slate-900 border-slate-800 text-white h-9 text-xs font-mono"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-slate-300">CVV</Label>
+                          <Input
+                            value={cvv}
+                            onChange={(e) => setCvv(e.target.value)}
+                            className="bg-slate-900 border-slate-800 text-white h-9 text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                      <Lock className="h-3.5 w-3.5 text-gold" />
+                      <span>Clicking Complete Payment triggers payment_intent.succeeded webhook simulation.</span>
+                    </div>
+
+                    <Button
+                      onClick={handleCompletePayment}
+                      disabled={isProcessing}
+                      className="w-full gradient-gold text-slate-950 font-bold h-12 text-base shadow-lg shadow-gold/10"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Authorizing via Gateway Webhook...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Complete Payment — {formatPrice(intent.amount)}
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {/* Instant UPI QR Code View */}
+                    <div className="text-center space-y-4">
+                      <div className="bg-white p-4 rounded-2xl mx-auto w-56 shadow-2xl border-2 border-gold/40 flex flex-col items-center">
+                        {/* High-contrast crisp SVG QR Code */}
+                        <svg
+                          viewBox="0 0 200 200"
+                          className="w-48 h-48"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <rect width="200" height="200" fill="white" />
+                          {/* Top-Left Finder */}
+                          <rect x="15" y="15" width="50" height="50" rx="6" fill="#020617" />
+                          <rect x="23" y="23" width="34" height="34" rx="4" fill="white" />
+                          <rect x="30" y="30" width="20" height="20" rx="3" fill="#D4AF37" />
+
+                          {/* Top-Right Finder */}
+                          <rect x="135" y="15" width="50" height="50" rx="6" fill="#020617" />
+                          <rect x="143" y="23" width="34" height="34" rx="4" fill="white" />
+                          <rect x="150" y="30" width="20" height="20" rx="3" fill="#D4AF37" />
+
+                          {/* Bottom-Left Finder */}
+                          <rect x="15" y="135" width="50" height="50" rx="6" fill="#020617" />
+                          <rect x="23" y="143" width="34" height="34" rx="4" fill="white" />
+                          <rect x="30" y="150" width="20" height="20" rx="3" fill="#D4AF37" />
+
+                          {/* Data Matrix Dots */}
+                          <g fill="#020617">
+                            <rect x="75" y="20" width="10" height="10" rx="2" />
+                            <rect x="95" y="20" width="10" height="10" rx="2" />
+                            <rect x="115" y="20" width="10" height="10" rx="2" />
+                            <rect x="75" y="40" width="10" height="10" rx="2" />
+                            <rect x="105" y="40" width="10" height="10" rx="2" />
+                            <rect x="85" y="60" width="10" height="10" rx="2" />
+                            <rect x="20" y="75" width="10" height="10" rx="2" />
+                            <rect x="40" y="75" width="10" height="10" rx="2" />
+                            <rect x="60" y="75" width="10" height="10" rx="2" />
+                            <rect x="130" y="75" width="10" height="10" rx="2" />
+                            <rect x="150" y="75" width="10" height="10" rx="2" />
+                            <rect x="170" y="75" width="10" height="10" rx="2" />
+
+                            <rect x="20" y="95" width="10" height="10" rx="2" />
+                            <rect x="40" y="105" width="10" height="10" rx="2" />
+                            <rect x="140" y="95" width="10" height="10" rx="2" />
+                            <rect x="160" y="105" width="10" height="10" rx="2" />
+
+                            <rect x="75" y="130" width="10" height="10" rx="2" />
+                            <rect x="95" y="140" width="10" height="10" rx="2" />
+                            <rect x="115" y="130" width="10" height="10" rx="2" />
+                            <rect x="75" y="160" width="10" height="10" rx="2" />
+                            <rect x="105" y="170" width="10" height="10" rx="2" />
+                            <rect x="135" y="150" width="10" height="10" rx="2" />
+                            <rect x="155" y="160" width="10" height="10" rx="2" />
+                            <rect x="175" y="140" width="10" height="10" rx="2" />
+                          </g>
+
+                          {/* Center Crest */}
+                          <rect x="80" y="80" width="40" height="40" rx="8" fill="#020617" />
+                          <circle cx="100" cy="100" r="14" fill="#D4AF37" />
+                          <text
+                            x="100"
+                            y="104"
+                            textAnchor="middle"
+                            fill="#020617"
+                            fontSize="10"
+                            fontWeight="bold"
+                            fontFamily="sans-serif"
+                          >
+                            VIP
+                          </text>
+                        </svg>
+
+                        <div className="mt-2 text-center">
+                          <p className="text-[11px] font-bold text-slate-900 tracking-wider">
+                            SCAN WITH ANY UPI APP
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Supported UPI Apps */}
+                      <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-slate-400">
+                        {["GPay", "PhonePe", "Paytm", "CRED UPI", "BHIM"].map((app, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 font-medium"
+                          >
+                            {app}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* UPI ID & Amount */}
+                      <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400">Merchant VPA:</span>
+                          <div className="flex items-center gap-1.5">
+                            <code className="text-gold font-mono font-semibold">
+                              carstore.bespoke@icici
+                            </code>
+                            <button
+                              type="button"
+                              onClick={handleCopyUpi}
+                              className="text-slate-400 hover:text-gold transition p-1"
+                              title="Copy UPI ID"
+                            >
+                              {copiedUpi ? (
+                                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2 border-t border-slate-800/80">
+                          <span className="text-slate-400">Total Settlement:</span>
+                          <span className="text-base font-bold text-gradient-gold font-sans">
+                            {formatPrice(intent.amount)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2 text-[11px] text-emerald-400">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>Awaiting UPI payment confirmation via Webhook & SSE</span>
+                      </div>
+
+                      <Button
+                        onClick={handleCompletePayment}
+                        disabled={isProcessing}
+                        className="w-full gradient-gold text-slate-950 font-bold h-12 text-base shadow-lg shadow-gold/10"
                       >
-                        {copiedSecret ? (
-                          <Check className="h-3 w-3 text-emerald-400" />
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Simulating Bank Approval...
+                          </>
                         ) : (
-                          <Copy className="h-3 w-3" />
+                          <>
+                            <Smartphone className="mr-2 h-4 w-4" />
+                            Simulate UPI Approval — {formatPrice(intent.amount)}
+                          </>
                         )}
-                      </button>
+                      </Button>
                     </div>
-                  </div>
-                </div>
-
-                {/* Simulated form inputs */}
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-slate-300">Name on Card</Label>
-                    <Input
-                      value={cardHolder}
-                      onChange={(e) => setCardHolder(e.target.value)}
-                      className="bg-slate-900 border-slate-800 text-white h-9 text-xs font-mono"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">Expiry (MM/YY)</Label>
-                      <Input
-                        value={expiry}
-                        onChange={(e) => setExpiry(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white h-9 text-xs font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">CVV</Label>
-                      <Input
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white h-9 text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                  <Lock className="h-3.5 w-3.5 text-gold" />
-                  <span>Clicking Complete Payment triggers payment_intent.succeeded webhook simulation.</span>
-                </div>
-
-                <Button
-                  onClick={handleCompletePayment}
-                  disabled={isProcessing}
-                  className="w-full gradient-gold text-slate-950 font-bold h-12 text-base shadow-lg shadow-gold/10"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Authorizing via Gateway Webhook...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Complete Payment — {formatPrice(intent.amount)}
-                    </>
-                  )}
-                </Button>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

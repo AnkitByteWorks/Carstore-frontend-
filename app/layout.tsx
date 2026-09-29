@@ -15,6 +15,7 @@ const playfair = Playfair_Display({
 });
 
 import { CompareBar } from "@/components/cars/compare-bar";
+import { AiConciergeChat } from "@/components/ai/ai-concierge-chat";
 
 export const metadata: Metadata = {
   title: "Carstore — Luxury Cars",
@@ -35,6 +36,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <CompareBar />
+          <AiConciergeChat />
         </Providers>
 
         <Toaster position="top-right" richColors />

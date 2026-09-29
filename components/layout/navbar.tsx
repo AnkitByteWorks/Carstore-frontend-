@@ -11,6 +11,7 @@ import {
   Package,
   Heart,
   ArrowLeftRight,
+  Gavel,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,6 +74,16 @@ export function Navbar() {
             className="text-sm font-medium text-slate-300 hover:text-gold transition"
           >
             Browse Fleet
+          </Link>
+          <Link
+            href="/auctions"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-gold transition group"
+          >
+            <Gavel className="h-4 w-4 text-gold group-hover:scale-110 transition-transform" />
+            <span>Auctions</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 text-[9px] font-bold tracking-wider animate-pulse">
+              LIVE
+            </span>
           </Link>
           <Link
             href="/compare"
@@ -215,6 +226,18 @@ export function Navbar() {
               className="text-sm font-medium text-slate-300 hover:text-gold"
             >
               Browse Fleet
+            </Link>
+            <Link
+              href="/auctions"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between text-sm font-medium text-slate-300 hover:text-gold"
+            >
+              <span className="flex items-center gap-2">
+                <Gavel className="h-4 w-4 text-gold" /> Live Auctions
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold animate-pulse">
+                LIVE
+              </span>
             </Link>
             <Link
               href="/compare"
