@@ -15,9 +15,12 @@ import {
   Palette,
   Sparkles,
   MoveHorizontal,
+  Box,
+  Eye,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { Car3DViewer } from "./car-3d-viewer";
 
 interface CarVisualizer360Props {
   car: Car;
@@ -76,6 +79,7 @@ const PAINT_OPTIONS: PaintOption[] = [
 ];
 
 export function CarVisualizer360({ car }: CarVisualizer360Props) {
+  const [activeMode, setActiveMode] = useState<"3d" | "photo">("3d");
   const [rotationAngle, setRotationAngle] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -210,163 +214,205 @@ export function CarVisualizer360({ car }: CarVisualizer360Props) {
         <div>
           <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Interactive 360° Studio</span>
+            <span>Interactive 3D Studio & Acoustics</span>
           </div>
           <h3 className="font-playfair text-xl font-bold text-white mt-0.5">
-            Bespoke Exterior & Acoustics
+            Bespoke Engineering & CAD Studio
           </h3>
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="border-gold/30 text-gold text-xs font-mono">
-            Angle: {rotationAngle}°
-          </Badge>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setRotationAngle(0)}
-            className="text-slate-400 hover:text-white text-xs h-7 px-2"
-          >
-            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            Reset Angle
-          </Button>
-        </div>
-      </div>
+          {/* Mode Switch Tabs */}
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <Button
+              size="sm"
+              variant={activeMode === "3d" ? "default" : "ghost"}
+              onClick={() => setActiveMode("3d")}
+              className={`text-xs h-7 px-3 font-semibold ${
+                activeMode === "3d"
+                  ? "bg-gold text-slate-950 font-bold hover:bg-gold/90 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Box className="h-3.5 w-3.5 mr-1.5" />
+              3D CAD Studio
+            </Button>
 
-      {/* 360 Interactive Canvas Container */}
-      <div
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleMouseUp}
-        className={`relative aspect-[16/9] rounded-xl overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 border border-slate-800 cursor-grab select-none flex items-center justify-center transition-all ${
-          isDragging ? "cursor-grabbing shadow-inner ring-1 ring-gold/40" : ""
-        }`}
-      >
-        {/* Subtle grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-
-        {/* Ambient Color Glow reflection */}
-        <div
-          className="absolute inset-x-12 bottom-0 h-24 rounded-full blur-3xl opacity-40 transition-colors duration-700 pointer-events-none"
-          style={{ backgroundColor: selectedPaint.accent }}
-        />
-
-        {/* Rotated Car Image with Perspective Transform */}
-        <motion.div
-          animate={{
-            rotateY: (rotationAngle % 360) * 0.25,
-            scale: 1 + Math.sin((rotationAngle * Math.PI) / 180) * 0.05,
-          }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="w-full h-full p-4 flex items-center justify-center relative z-10"
-        >
-          <img
-            src={imageSrc}
-            alt={car.name}
-            style={{ filter: selectedPaint.overlayFilter }}
-            className="max-h-full max-w-full object-contain pointer-events-none transition-[filter] duration-500 drop-shadow-[0_25px_35px_rgba(0,0,0,0.85)]"
-          />
-        </motion.div>
-
-        {/* Drag Helper Overlay */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-slate-800 text-[11px] text-slate-300 pointer-events-none">
-          <MoveHorizontal className="h-3.5 w-3.5 text-gold animate-pulse" />
-          <span>Click & Drag Horizontally to Rotate 360°</span>
-        </div>
-      </div>
-
-      {/* Studio Controls Grid: Paint Selector + Exhaust Sound */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-        {/* Paint Swatches */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5 text-gold" />
-              Bespoke Paint Studio
-            </span>
-            <span className="text-xs font-medium text-gold">
-              {selectedPaint.name}
-            </span>
+            <Button
+              size="sm"
+              variant={activeMode === "photo" ? "default" : "ghost"}
+              onClick={() => setActiveMode("photo")}
+              className={`text-xs h-7 px-3 font-semibold ${
+                activeMode === "photo"
+                  ? "bg-gold text-slate-950 font-bold hover:bg-gold/90 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Eye className="h-3.5 w-3.5 mr-1.5" />
+              360° Photo Reel
+            </Button>
           </div>
 
-          <div className="flex items-center gap-3">
-            {PAINT_OPTIONS.map((paint) => {
-              const isSelected = selectedPaint.id === paint.id;
-              return (
-                <button
-                  key={paint.id}
-                  onClick={() => setSelectedPaint(paint)}
-                  title={paint.name}
-                  className={`group relative h-10 w-10 rounded-full transition-all duration-200 flex items-center justify-center p-0.5 ${
-                    isSelected
-                      ? "ring-2 ring-gold ring-offset-2 ring-offset-slate-950 scale-110 shadow-lg"
-                      : "opacity-70 hover:opacity-100 hover:scale-105"
-                  }`}
-                >
-                  <span
-                    className="h-full w-full rounded-full border border-white/20 shadow-inner"
-                    style={{ backgroundColor: paint.color }}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Exhaust Acoustics Synthesizer */}
-        <div className="space-y-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Gauge className="h-3.5 w-3.5 text-gold" />
-              Twin-Turbo Exhaust Sound
-            </span>
-            {isPlayingSound && (
-              <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                {rpm} RPM
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {!isPlayingSound ? (
+          {activeMode === "photo" && (
+            <div className="hidden sm:flex items-center gap-2">
+              <Badge variant="outline" className="border-gold/30 text-gold text-xs font-mono">
+                {rotationAngle}°
+              </Badge>
               <Button
-                onClick={startEngineSound}
-                className="flex-1 gradient-gold text-slate-950 font-bold h-10 text-xs shadow-md shadow-gold/10"
+                size="sm"
+                variant="ghost"
+                onClick={() => setRotationAngle(0)}
+                className="text-slate-400 hover:text-white text-xs h-7 px-2"
               >
-                <Volume2 className="h-4 w-4 mr-1.5" />
-                Start V8 Engine
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                Reset
               </Button>
-            ) : (
-              <>
-                <Button
-                  onMouseDown={() => throttleRev(true)}
-                  onMouseUp={() => throttleRev(false)}
-                  onTouchStart={() => throttleRev(true)}
-                  onTouchEnd={() => throttleRev(false)}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold h-10 text-xs shadow-lg shadow-red-600/20 active:scale-95 transition-all"
-                >
-                  <Flame className="h-4 w-4 mr-1.5 text-amber-300 animate-bounce" />
-                  Hold to Rev Throttle (8,500 RPM)
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={stopEngineSound}
-                  className="border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white h-10 px-3"
-                  title="Cut Engine"
-                >
-                  <VolumeX className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Active Studio View */}
+      {activeMode === "3d" ? (
+        <Car3DViewer car={car} />
+      ) : (
+        <>
+          {/* 360 Interactive Canvas Container */}
+          <div
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleMouseUp}
+            className={`relative aspect-[16/9] rounded-xl overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 border border-slate-800 cursor-grab select-none flex items-center justify-center transition-all ${
+              isDragging ? "cursor-grabbing shadow-inner ring-1 ring-gold/40" : ""
+            }`}
+          >
+            {/* Subtle grid background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+
+            {/* Ambient Color Glow reflection */}
+            <div
+              className="absolute inset-x-12 bottom-0 h-24 rounded-full blur-3xl opacity-40 transition-colors duration-700 pointer-events-none"
+              style={{ backgroundColor: selectedPaint.accent }}
+            />
+
+            {/* Rotated Car Image with Perspective Transform */}
+            <motion.div
+              animate={{
+                rotateY: (rotationAngle % 360) * 0.25,
+                scale: 1 + Math.sin((rotationAngle * Math.PI) / 180) * 0.05,
+              }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="w-full h-full p-4 flex items-center justify-center relative z-10"
+            >
+              <img
+                src={imageSrc}
+                alt={car.name}
+                style={{ filter: selectedPaint.overlayFilter }}
+                className="max-h-full max-w-full object-contain pointer-events-none transition-[filter] duration-500 drop-shadow-[0_25px_35px_rgba(0,0,0,0.85)]"
+              />
+            </motion.div>
+
+            {/* Drag Helper Overlay */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-slate-800 text-[11px] text-slate-300 pointer-events-none">
+              <MoveHorizontal className="h-3.5 w-3.5 text-gold animate-pulse" />
+              <span>Click & Drag Horizontally to Rotate 360°</span>
+            </div>
+          </div>
+
+          {/* Studio Controls Grid: Paint Selector + Exhaust Sound */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            {/* Paint Swatches */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Palette className="h-3.5 w-3.5 text-gold" />
+                  Bespoke Paint Studio
+                </span>
+                <span className="text-xs font-medium text-gold">
+                  {selectedPaint.name}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {PAINT_OPTIONS.map((paint) => {
+                  const isSelected = selectedPaint.id === paint.id;
+                  return (
+                    <button
+                      key={paint.id}
+                      onClick={() => setSelectedPaint(paint)}
+                      title={paint.name}
+                      className={`group relative h-10 w-10 rounded-full transition-all duration-200 flex items-center justify-center p-0.5 ${
+                        isSelected
+                          ? "ring-2 ring-gold ring-offset-2 ring-offset-slate-950 scale-110 shadow-lg"
+                          : "opacity-70 hover:opacity-100 hover:scale-105"
+                      }`}
+                    >
+                      <span
+                        className="h-full w-full rounded-full border border-white/20 shadow-inner"
+                        style={{ backgroundColor: paint.color }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Exhaust Acoustics Synthesizer */}
+            <div className="space-y-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Gauge className="h-3.5 w-3.5 text-gold" />
+                  Twin-Turbo Exhaust Sound
+                </span>
+                {isPlayingSound && (
+                  <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    {rpm} RPM
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                {!isPlayingSound ? (
+                  <Button
+                    onClick={startEngineSound}
+                    className="flex-1 gradient-gold text-slate-950 font-bold h-10 text-xs shadow-md shadow-gold/10"
+                  >
+                    <Volume2 className="h-4 w-4 mr-1.5" />
+                    Start V8 Engine
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onMouseDown={() => throttleRev(true)}
+                      onMouseUp={() => throttleRev(false)}
+                      onTouchStart={() => throttleRev(true)}
+                      onTouchEnd={() => throttleRev(false)}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold h-10 text-xs shadow-lg shadow-red-600/20 active:scale-95 transition-all"
+                    >
+                      <Flame className="h-4 w-4 mr-1.5 text-amber-300 animate-bounce" />
+                      Hold to Rev Throttle (8,500 RPM)
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={stopEngineSound}
+                      className="border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white h-10 px-3"
+                      title="Cut Engine"
+                    >
+                      <VolumeX className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
