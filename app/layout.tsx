@@ -16,6 +16,7 @@ const playfair = Playfair_Display({
 
 import { CompareBar } from "@/components/cars/compare-bar";
 import { AiConciergeChat } from "@/components/ai/ai-concierge-chat";
+import { LuxurySpotlight } from "@/components/ui/luxury-spotlight";
 
 export const metadata: Metadata = {
   title: "Carstore — Luxury Cars",
@@ -33,6 +34,7 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable}`}
     >
       <body className="font-sans antialiased bg-slate-950 text-white">
+        <LuxurySpotlight />
         <Providers>
           {children}
           <CompareBar />

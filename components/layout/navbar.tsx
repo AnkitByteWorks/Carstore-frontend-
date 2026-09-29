@@ -12,6 +12,8 @@ import {
   Heart,
   ArrowLeftRight,
   Gavel,
+  Gauge,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +30,7 @@ import { authApi } from "@/lib/api/auth";
 import { useGarageStore } from "@/lib/store/garage-store";
 import { useCompareStore } from "@/lib/store/compare-store";
 import { CommandSearch } from "./command-search";
+import { AmbientSoundToggle } from "./ambient-sound-toggle";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -86,6 +89,23 @@ export function Navbar() {
             </span>
           </Link>
           <Link
+            href="/race"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-gold transition group"
+          >
+            <Gauge className="h-4 w-4 text-gold group-hover:scale-110 transition-transform" />
+            <span>Race Simulator</span>
+          </Link>
+          <Link
+            href="/vault"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-gold transition group"
+          >
+            <KeyRound className="h-4 w-4 text-gold group-hover:scale-110 transition-transform" />
+            <span>VIP Vault</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 text-[9px] font-bold tracking-wider">
+              1-OF-1
+            </span>
+          </Link>
+          <Link
             href="/compare"
             className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-gold transition"
           >
@@ -119,6 +139,7 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="hidden md:flex items-center gap-3">
+          <AmbientSoundToggle />
           <CommandSearch />
 
           {isAuthenticated ? (
@@ -237,6 +258,30 @@ export function Navbar() {
               </span>
               <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold animate-pulse">
                 LIVE
+              </span>
+            </Link>
+            <Link
+              href="/race"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between text-sm font-medium text-slate-300 hover:text-gold"
+            >
+              <span className="flex items-center gap-2">
+                <Gauge className="h-4 w-4 text-gold" /> Race Simulator
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold font-mono">
+                1/4 mi
+              </span>
+            </Link>
+            <Link
+              href="/vault"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between text-sm font-medium text-slate-300 hover:text-gold"
+            >
+              <span className="flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-gold" /> VIP Secret Vault
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-gold/15 text-gold text-xs font-bold">
+                1-OF-1
               </span>
             </Link>
             <Link

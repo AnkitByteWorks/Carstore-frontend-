@@ -17,7 +17,9 @@ import {
   Music,
   ArrowRight,
   Sparkles,
+  Type,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface CarConfiguratorProps {
   car: Car;
@@ -145,6 +147,10 @@ export function CarConfigurator({ car }: CarConfiguratorProps) {
     audio: "audio_std",
   });
 
+  const [monogramText, setMonogramText] = useState("ANKIT SINGH");
+  const [monogramColor, setMonogramColor] = useState("#D4AF37");
+  const [monogramEnabled, setMonogramEnabled] = useState(true);
+
   const handleSelectOption = (categoryId: string, optionId: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
@@ -166,6 +172,11 @@ export function CarConfigurator({ car }: CarConfiguratorProps) {
       }
     }
   });
+
+  if (monogramEnabled && monogramText.trim()) {
+    totalOptionsPrice += 250000;
+    chosenOptionsList.push(`Illuminated Sill Monogram: "${monogramText.toUpperCase()}"`);
+  }
 
   const finalTotalPrice = car.price + totalOptionsPrice;
 
@@ -256,6 +267,137 @@ export function CarConfigurator({ car }: CarConfiguratorProps) {
             </div>
           );
         })}
+      </div>
+
+      {/* Bespoke Illuminated Carbon Sill Plate Monogram Studio */}
+      <div className="p-6 rounded-2xl bg-slate-950/80 border border-gold/30 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gold/15 text-gold border border-gold/30 flex items-center justify-center">
+              <Type className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-playfair font-bold text-white text-base">
+                  Bespoke Illuminated Sill Plate Monogram
+                </h4>
+                <Badge className="bg-gold/15 text-gold border-gold/30 text-[10px]">
+                  1-OF-1 ATELIER
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-400">
+                Precision laser-etched carbon fiber door entry plates with custom backlight glow
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant={monogramEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => setMonogramEnabled(!monogramEnabled)}
+              className={
+                monogramEnabled
+                  ? "gradient-gold text-slate-950 font-bold text-xs"
+                  : "border-slate-800 text-slate-400 text-xs"
+              }
+            >
+              {monogramEnabled ? "Included (+₹2.5L)" : "Add Monogram"}
+            </Button>
+          </div>
+        </div>
+
+        {monogramEnabled && (
+          <div className="space-y-6 pt-2">
+            {/* Live Interactive Sill Plate Visualizer */}
+            <div className="relative p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 border-2 border-slate-700/80 shadow-[inset_0_2px_15px_rgba(0,0,0,0.8)] overflow-hidden">
+              {/* Carbon fiber hatch pattern overlay */}
+              <div
+                className="absolute inset-0 opacity-25 pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 0, transparent 4px)",
+                }}
+              />
+
+              <div className="relative text-center space-y-2 py-4">
+                <span className="text-[10px] uppercase font-mono tracking-widest text-slate-500 block">
+                  TITANIUM BESPOKE ENTRY PLATE
+                </span>
+                <p
+                  className="font-mono font-bold tracking-widest text-sm sm:text-lg transition-all duration-300 select-none"
+                  style={{
+                    color: monogramColor,
+                    textShadow: `0 0 16px ${monogramColor}, 0 0 35px ${monogramColor}88`,
+                  }}
+                >
+                  HANDCRAFTED FOR {monogramText.trim().toUpperCase() || "VIP CLIENT"} • 01 OF 01
+                </p>
+                <div
+                  className="h-0.5 w-32 sm:w-48 mx-auto rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor: monogramColor,
+                    boxShadow: `0 0 12px ${monogramColor}`,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Monogram Customization Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-300 font-medium">
+                  Engraved Name / Monogram Inscription
+                </label>
+                <Input
+                  value={monogramText}
+                  onChange={(e) => setMonogramText(e.target.value)}
+                  placeholder="Enter your name or family crest..."
+                  className="bg-slate-900 border-slate-800 text-white font-mono uppercase text-xs h-10 focus-visible:ring-gold"
+                  maxLength={26}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-300 font-medium">
+                  LED Backlight Luminescence Color
+                </label>
+                <div className="flex items-center gap-2 pt-1">
+                  {[
+                    { color: "#D4AF37", name: "Amber Gold" },
+                    { color: "#F8FAFC", name: "Ice White" },
+                    { color: "#EF4444", name: "Rosso Corsa" },
+                    { color: "#38BDF8", name: "Riviera Blue" },
+                    { color: "#22C55E", name: "Verde Mantis" },
+                  ].map((swatch) => (
+                    <button
+                      key={swatch.color}
+                      type="button"
+                      onClick={() => setMonogramColor(swatch.color)}
+                      title={swatch.name}
+                      className={`w-7 h-7 rounded-full border-2 transition-all ${
+                        monogramColor === swatch.color
+                          ? "border-white scale-110 shadow-lg"
+                          : "border-slate-800 opacity-60 hover:opacity-100"
+                      }`}
+                      style={{
+                        backgroundColor: swatch.color,
+                        boxShadow:
+                          monogramColor === swatch.color
+                            ? `0 0 10px ${swatch.color}`
+                            : "none",
+                      }}
+                    />
+                  ))}
+                  <span className="text-xs text-slate-400 font-mono ml-2">
+                    {monogramColor}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <Separator className="bg-slate-800" />

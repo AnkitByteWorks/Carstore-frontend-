@@ -6,6 +6,7 @@ import { ordersApi, type Order, type OrderStatusType } from "@/lib/api/orders";
 import { paymentsApi, type PaymentIntentResponse } from "@/lib/api/payments";
 import { useOrderEvents } from "@/lib/hooks/use-order-events";
 import { OrderTrackingStepper } from "@/components/orders/order-tracking-stepper";
+import { EnclosedCarrierMap } from "@/components/orders/enclosed-carrier-map";
 import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 import { LuxuryPaymentModal } from "@/components/checkout/luxury-payment-modal";
 import { Navbar } from "@/components/layout/navbar";
@@ -301,6 +302,13 @@ export default function OrderDetailsPage({
             </div>
           </div>
         </Card>
+
+        {/* Live GPS Enclosed Carrier Radar */}
+        <EnclosedCarrierMap
+          orderId={order.id}
+          deliveryCity={order.deliveryCity}
+          status={currentStatus}
+        />
 
         {/* Primary Actions: Download PDF Tax Invoice */}
         <div className="space-y-4 print:hidden">

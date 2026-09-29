@@ -13,6 +13,10 @@ import {
   ArrowRight,
   Gauge,
   Zap,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils/format";
 import { getCarFallbackImage } from "@/lib/utils/car-images";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface CarRecommendation {
   id: number;
@@ -61,7 +66,69 @@ export function AiConciergeChat() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const speakReply = (text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const cleanText = text
+        .replace(/\*\*/g, "")
+        .replace(/\*/g, "")
+        .replace(/#/g, "")
+        .replace(/\[.*?\]\(.*?\)/g, "");
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 0.95;
+      utterance.pitch = 0.98;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {}
+  };
+
+  const toggleListening = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Speech Recognition is not supported in this browser.");
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.info("Listening for VIP inquiry...", {
+          description: "Speak clearly into your microphone.",
+        });
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setIsListening(false);
+        if (transcript) {
+          handleSendMessage(transcript);
+        }
+      };
+
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognition.start();
+    } catch (e) {
+      setIsListening(false);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -111,6 +178,9 @@ export function AiConciergeChat() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      if (voiceEnabled && data.reply) {
+        speakReply(data.reply);
+      }
       if (!isOpen) {
         setHasUnread(true);
       }
@@ -208,6 +278,24 @@ export function AiConciergeChat() {
               </div>
 
               <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    const next = !voiceEnabled;
+                    setVoiceEnabled(next);
+                    if (next) {
+                      toast.success("Voice Readout Enabled", { description: "Concierge will speak responses." });
+                    } else {
+                      window.speechSynthesis?.cancel();
+                      toast.info("Voice Readout Muted");
+                    }
+                  }}
+                  title={voiceEnabled ? "Mute Voice Readout" : "Enable Voice Readout"}
+                  className={`p-1.5 rounded-lg transition ${
+                    voiceEnabled ? "text-gold bg-gold/15" : "text-slate-400 hover:text-white hover:bg-slate-800"
+                  }`}
+                >
+                  {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                </button>
                 <button
                   onClick={resetChat}
                   title="Reset Conversation"
@@ -338,10 +426,22 @@ export function AiConciergeChat() {
                 }}
                 className="flex items-center gap-2"
               >
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  title={isListening ? "Listening... (Click to cancel)" : "Speak VIP Inquiry"}
+                  className={`h-10 w-10 rounded-lg flex items-center justify-center transition flex-shrink-0 ${
+                    isListening
+                      ? "bg-red-500/20 border border-red-500 text-red-400 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]"
+                      : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-gold hover:border-gold/30"
+                  }`}
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
                 <Input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Inquire about speed, pricing, acoustics..."
+                  placeholder="Inquire or speak about supercars, acoustics..."
                   className="bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 text-xs focus-visible:ring-gold h-10"
                 />
                 <Button
