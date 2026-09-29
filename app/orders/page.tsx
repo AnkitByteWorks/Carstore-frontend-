@@ -106,20 +106,8 @@ export default function MyOrdersPage() {
                       {/* Image */}
                       <div className="md:w-48 aspect-[16/10] md:aspect-square overflow-hidden bg-slate-800 flex-shrink-0">
                         <img
-                          src={
-                            order.carName?.toLowerCase().includes("chiron")
-                              ? getCarFallbackImage(5, "bugatti")
-                              : (order.carImageUrl
-                                  ? `${getApiBaseUrl()}${order.carImageUrl}`
-                                  : getCarFallbackImage(order.carId))
-                          }
+                          src={getCarFallbackImage(order.carId, undefined, order.carName)}
                           alt={order.carName}
-                          onError={(e) => {
-                            const fallback = getCarFallbackImage(order.carId);
-                            if (e.currentTarget.src !== fallback) {
-                              e.currentTarget.src = fallback;
-                            }
-                          }}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>

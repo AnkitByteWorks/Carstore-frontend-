@@ -107,20 +107,8 @@ export default function ComparePage() {
 
                     <div className="aspect-[16/10] rounded-xl overflow-hidden bg-slate-800 border border-slate-800 relative">
                       <img
-                        src={
-                          car.brand?.toLowerCase() === "bugatti" || car.name?.toLowerCase().includes("chiron")
-                            ? getCarFallbackImage(car.id, car.brand)
-                            : (car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
-                                ? car.imageUrl
-                                : getCarFallbackImage(car.id, car.brand))
-                        }
+                        src={getCarFallbackImage(car.id, car.brand, car.name)}
                         alt={car.name}
-                        onError={(e) => {
-                          const fallback = getCarFallbackImage(car.id, car.brand);
-                          if (e.currentTarget.src !== fallback) {
-                            e.currentTarget.src = fallback;
-                          }
-                        }}
                         className="w-full h-full object-cover"
                       />
                       <Badge className="absolute bottom-2 left-2 bg-slate-950/90 text-gold border-gold/40 text-[11px]">

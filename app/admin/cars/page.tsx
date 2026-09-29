@@ -92,20 +92,8 @@ export default function AdminCarsPage() {
                 {/* Image */}
                 <div className="w-full md:w-24 aspect-[16/10] md:aspect-square rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
                   <img
-                    src={
-                      car.brand?.toLowerCase() === "bugatti" || car.name?.toLowerCase().includes("chiron")
-                        ? getCarFallbackImage(car.id, car.brand)
-                        : (car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
-                            ? car.imageUrl
-                            : getCarFallbackImage(car.id, car.brand))
-                    }
+                    src={getCarFallbackImage(car.id, car.brand, car.name)}
                     alt={car.name}
-                    onError={(e) => {
-                      const fallback = getCarFallbackImage(car.id, car.brand);
-                      if (e.currentTarget.src !== fallback) {
-                        e.currentTarget.src = fallback;
-                      }
-                    }}
                     className="w-full h-full object-cover"
                   />
                 </div>

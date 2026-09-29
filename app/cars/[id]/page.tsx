@@ -114,20 +114,8 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
           >
             <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
               <img
-                src={
-                  car.brand?.toLowerCase() === "bugatti" || car.name?.toLowerCase().includes("chiron")
-                    ? getCarFallbackImage(car.id, car.brand)
-                    : (car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
-                        ? car.imageUrl
-                        : getCarFallbackImage(car.id, car.brand))
-                }
+                src={getCarFallbackImage(car.id, car.brand, car.name)}
                 alt={car.name}
-                onError={(e) => {
-                  const fallback = getCarFallbackImage(car.id, car.brand);
-                  if (e.currentTarget.src !== fallback) {
-                    e.currentTarget.src = fallback;
-                  }
-                }}
                 className="h-full w-full object-cover"
               />
               <Badge className="absolute top-4 left-4 bg-slate-950/90 backdrop-blur-sm text-gold border-gold/50 text-sm px-3 py-1">

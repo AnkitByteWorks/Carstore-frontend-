@@ -14,13 +14,7 @@ interface CarCardProps {
 }
 
 export function CarCard({ car }: CarCardProps) {
-    const isBugatti = car.brand?.toLowerCase() === "bugatti" || car.name?.toLowerCase().includes("chiron");
-    const fallbackImage = getCarFallbackImage(car.id, car.brand);
-    const imageUrl = isBugatti
-        ? fallbackImage
-        : (car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
-            ? car.imageUrl
-            : fallbackImage);
+    const imageUrl = getCarFallbackImage(car.id, car.brand, car.name);
 
     return (
         <Link href={`/cars/${car.id}`}>
@@ -30,11 +24,6 @@ export function CarCard({ car }: CarCardProps) {
                     <img
                         src={imageUrl}
                         alt={car.name}
-                        onError={(e) => {
-                            if (e.currentTarget.src !== fallbackImage) {
-                                e.currentTarget.src = fallbackImage;
-                            }
-                        }}
                         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
 
