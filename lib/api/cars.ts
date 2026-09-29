@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getApiBaseUrl } from "./config";
 import type { Car, PageResponse } from "@/lib/types/car";
 
 export const carsApi = {
@@ -79,11 +80,6 @@ export const carsApi = {
 
   // Image URL helper
   getImageUrl: (id: number): string => {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      (process.env.NODE_ENV === "production"
-        ? "https://project-luxury-carstore-production.up.railway.app"
-        : "http://localhost:8080");
-    return `${baseUrl}/api/cars/${id}/image`;
+    return `${getApiBaseUrl()}/api/cars/${id}/image`;
   },
 };

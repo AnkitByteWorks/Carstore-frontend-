@@ -25,6 +25,8 @@ import { GarageButton } from "@/components/cars/garage-button";
 import { CompareButton } from "@/components/cars/compare-button";
 import { EmiCalculator } from "@/components/cars/emi-calculator";
 import { TestDriveModal } from "@/components/cars/test-drive-modal";
+import { CarVisualizer360 } from "@/components/cars/car-visualizer-360";
+import { CarConfigurator } from "@/components/cars/car-configurator";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -113,8 +115,8 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
             <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
               <img
                 src={
-                  car.hasImage
-                    ? carsApi.getImageUrl(car.id)
+                  car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
+                    ? car.imageUrl
                     : getCarFallbackImage(car.id, car.brand)
                 }
                 alt={car.name}
@@ -264,8 +266,18 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
           </motion.div>
         </div>
 
+        {/* 360° Interactive Visualizer & Sound Studio */}
+        <div className="mt-14">
+          <CarVisualizer360 car={car} />
+        </div>
+
+        {/* Bespoke Car Configurator & Option Pricing */}
+        <div className="mt-14">
+          <CarConfigurator car={car} />
+        </div>
+
         {/* EMI & Loan Calculator */}
-        <div className="mt-12">
+        <div className="mt-14">
           <EmiCalculator price={car.price} />
         </div>
 

@@ -1,8 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store/auth-store";
-import { API_BASE_URL } from "./config";
+import { API_BASE_URL, getApiBaseUrl } from "./config";
 
-export { API_BASE_URL };
+export { API_BASE_URL, getApiBaseUrl };
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -12,9 +12,10 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
-// Auto-add JWT token if present
+// Auto-add JWT token if present and ensure dynamic remote/local baseURL
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
+    config.baseURL = getApiBaseUrl();
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

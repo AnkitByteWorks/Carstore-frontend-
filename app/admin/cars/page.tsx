@@ -93,8 +93,8 @@ export default function AdminCarsPage() {
                 <div className="w-full md:w-24 aspect-[16/10] md:aspect-square rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
                   <img
                     src={
-                      car.hasImage
-                        ? carsApi.getImageUrl(car.id)
+                      car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
+                        ? car.imageUrl
                         : getCarFallbackImage(car.id, car.brand)
                     }
                     alt={car.name}

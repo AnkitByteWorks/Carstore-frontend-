@@ -1,6 +1,6 @@
 import axios from "axios";
 import { apiClient } from "./client";
-import { API_BASE_URL } from "./config";
+import { API_BASE_URL, getApiBaseUrl } from "./config";
 
 export interface LoginRequest {
   username: string;
@@ -48,7 +48,7 @@ export const authApi = {
   refresh: async (refreshToken: string): Promise<TokenRefreshResponse> => {
     // Direct call with axios to avoid circular interceptor handling
     const response = await axios.post<TokenRefreshResponse>(
-      `${API_BASE_URL}/api/auth/refresh`,
+      `${getApiBaseUrl()}/api/auth/refresh`,
       { refreshToken },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -59,7 +59,7 @@ export const authApi = {
     if (!refreshToken) return;
     try {
       await axios.post(
-        `${API_BASE_URL}/api/auth/logout`,
+        `${getApiBaseUrl()}/api/auth/logout`,
         { refreshToken },
         { headers: { "Content-Type": "application/json" } }
       );

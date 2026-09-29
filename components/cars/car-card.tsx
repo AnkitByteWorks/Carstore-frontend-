@@ -14,9 +14,11 @@ interface CarCardProps {
 }
 
 export function CarCard({ car }: CarCardProps) {
-    const imageUrl = car.hasImage
-        ? carsApi.getImageUrl(car.id)
-        : getCarFallbackImage(car.id, car.brand);
+    const fallbackImage = getCarFallbackImage(car.id, car.brand);
+    // If backend provided an external CDN imageUrl, use it; otherwise use local public car image
+    const imageUrl = car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
+        ? car.imageUrl
+        : fallbackImage;
 
     return (
         <Link href={`/cars/${car.id}`}>
@@ -27,9 +29,8 @@ export function CarCard({ car }: CarCardProps) {
                         src={imageUrl}
                         alt={car.name}
                         onError={(e) => {
-                            const fallback = getCarFallbackImage(car.id, car.brand);
-                            if (e.currentTarget.src !== fallback) {
-                                e.currentTarget.src = fallback;
+                            if (e.currentTarget.src !== fallbackImage) {
+                                e.currentTarget.src = fallbackImage;
                             }
                         }}
                         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"

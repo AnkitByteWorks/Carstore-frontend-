@@ -1,7 +1,7 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { use, useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +35,7 @@ import {
   Loader2,
   ShieldCheck,
   ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils/format";
 import { motion } from "framer-motion";
@@ -56,23 +57,32 @@ const checkoutSchema = z.object({
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
 
-export default function CheckoutPage({
+function CheckoutContent({
   params,
 }: {
   params: Promise<{ carId: string }>;
 }) {
   const { carId } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentResponse | null>(null);
   const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  const customPriceParam = searchParams.get("customPrice");
+  const optionsParam = searchParams.get("options");
+  const customPrice = customPriceParam ? Number(customPriceParam) : null;
+  const bespokeOptions = optionsParam ? optionsParam.split(", ").filter(Boolean) : [];
+
   const { data: car, isLoading } = useQuery({
     queryKey: ["car", carId],
     queryFn: () => carsApi.getById(Number(carId)),
   });
+
+  const displayPrice = customPrice || (car ? car.price : 0);
+  const bespokeUpgradeCost = customPrice && car ? Math.max(0, customPrice - car.price) : 0;
 
   const {
     register,
@@ -103,10 +113,15 @@ export default function CheckoutPage({
   const onSubmit = async (data: CheckoutForm) => {
     setIsSubmitting(true);
     try {
+      const finalAddress = bespokeOptions.length > 0
+        ? `${data.deliveryAddress} [Bespoke Spec: ${optionsParam}]`
+        : data.deliveryAddress;
+
       const order = await ordersApi.placeOrder({
         carId: Number(carId),
         quantity: 1,
         ...data,
+        deliveryAddress: finalAddress,
       });
 
       toast.success("Order placed successfully! Initializing luxury payment...");
@@ -353,7 +368,7 @@ export default function CheckoutPage({
                     Placing order...
                   </>
                 ) : (
-                  <>Place Order — {formatPrice(car.price)}</>
+                  <>Place Order — {formatPrice(displayPrice)}</>
                 )}
               </Button>
             </form>
@@ -370,8 +385,8 @@ export default function CheckoutPage({
               <div className="aspect-[16/10] overflow-hidden bg-slate-800">
                 <img
                   src={
-                    car.hasImage
-                      ? carsApi.getImageUrl(car.id)
+                    car.imageUrl && !car.imageUrl.includes("localhost") && !car.imageUrl.includes("placeholder")
+                      ? car.imageUrl
                       : getCarFallbackImage(car.id, car.brand)
                   }
                   alt={car.name}
@@ -397,25 +412,54 @@ export default function CheckoutPage({
 
                 <Separator className="bg-slate-800" />
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Unit Price</span>
+                    <span className="text-slate-400">Base Price</span>
                     <span className="text-white font-medium">
                       {formatPrice(car.price)}
                     </span>
                   </div>
+
+                  {bespokeUpgradeCost > 0 && (
+                    <div className="flex justify-between text-gold">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Bespoke Customization
+                      </span>
+                      <span className="font-semibold">
+                        +{formatPrice(bespokeUpgradeCost)}
+                      </span>
+                    </div>
+                  )}
+
+                  {bespokeOptions.length > 0 && (
+                    <div className="pt-1 pb-1">
+                      <p className="text-xs text-slate-400 mb-1.5">Configured Options:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {bespokeOptions.map((opt, idx) => (
+                          <span
+                            key={idx}
+                            className="text-[11px] px-2 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/20"
+                          >
+                            {opt}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Delivery</span>
-                    <span className="text-white font-medium">
-                      Free
+                    <span className="text-slate-400">White-Glove Delivery</span>
+                    <span className="text-emerald-400 font-medium">
+                      Complimentary
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">
-                      {car.deliveryDays} days
+                      Estimated Delivery
                     </span>
-                    <span className="text-slate-400 text-xs">
-                      {car.showroomLocation}
+                    <span className="text-slate-300 text-xs">
+                      {car.deliveryDays} business days ({car.showroomLocation})
                     </span>
                   </div>
                 </div>
@@ -423,9 +467,14 @@ export default function CheckoutPage({
                 <Separator className="bg-slate-800" />
 
                 <div className="flex justify-between items-center pt-2">
-                  <span className="text-slate-400">Total</span>
+                  <div>
+                    <span className="text-slate-400">Total Investment</span>
+                    {bespokeUpgradeCost > 0 && (
+                      <p className="text-[10px] text-gold font-mono">Bespoke Spec Included</p>
+                    )}
+                  </div>
                   <span className="text-2xl font-bold text-gradient-gold">
-                    {formatPrice(car.price)}
+                    {formatPrice(displayPrice)}
                   </span>
                 </div>
               </div>
@@ -453,5 +502,23 @@ export default function CheckoutPage({
 
       <Footer />
     </main>
+  );
+}
+
+export default function CheckoutPage({
+  params,
+}: {
+  params: Promise<{ carId: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 text-gold animate-spin" />
+        </main>
+      }
+    >
+      <CheckoutContent params={params} />
+    </Suspense>
   );
 }
