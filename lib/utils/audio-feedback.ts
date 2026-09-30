@@ -267,3 +267,171 @@ class AmbientSoundscapePlayer {
 }
 
 export const ambientSoundscape = new AmbientSoundscapePlayer();
+
+/**
+ * Key Fob Unlock Dual-Chirp (Rolls-Royce / Porsche bespoke remote chirp)
+ */
+export function playKeyUnlockChirp() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    [0, 0.12].forEach((offset) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(2200, ctx.currentTime + offset);
+      osc.frequency.exponentialRampToValueAtTime(2450, ctx.currentTime + offset + 0.04);
+
+      gain.gain.setValueAtTime(0.12, ctx.currentTime + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.05);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + offset);
+      osc.stop(ctx.currentTime + offset + 0.055);
+    });
+  } catch (e) {}
+}
+
+/**
+ * Key Fob Lock Solenoid Thud
+ */
+export function playKeyLockThud() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    // Heavy mechanical solenoid
+    const sub = ctx.createOscillator();
+    const gain = ctx.createGain();
+    sub.type = "sine";
+    sub.frequency.setValueAtTime(140, ctx.currentTime);
+    sub.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.12);
+
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+
+    sub.connect(gain);
+    gain.connect(ctx.destination);
+    sub.start();
+    sub.stop(ctx.currentTime + 0.15);
+
+    // Single chirp
+    const chirp = ctx.createOscillator();
+    const chirpGain = ctx.createGain();
+    chirp.type = "sine";
+    chirp.frequency.setValueAtTime(2100, ctx.currentTime + 0.04);
+    chirpGain.gain.setValueAtTime(0.1, ctx.currentTime + 0.04);
+    chirpGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+
+    chirp.connect(chirpGain);
+    chirpGain.connect(ctx.destination);
+    chirp.start(ctx.currentTime + 0.04);
+    chirp.stop(ctx.currentTime + 0.095);
+  } catch (e) {}
+}
+
+/**
+ * Engine Ignition Roar (Starter crank + Throaty exhaust roar + idle burble)
+ */
+export function playEngineIgnitionRoar() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    // Starter motor cranks (3 pulses)
+    [0, 0.15, 0.3].forEach((t) => {
+      const crank = ctx.createOscillator();
+      const crankGain = ctx.createGain();
+      crank.type = "square";
+      crank.frequency.setValueAtTime(120, ctx.currentTime + t);
+      crank.frequency.linearRampToValueAtTime(90, ctx.currentTime + t + 0.08);
+
+      crankGain.gain.setValueAtTime(0.08, ctx.currentTime + t);
+      crankGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.09);
+
+      crank.connect(crankGain);
+      crankGain.connect(ctx.destination);
+      crank.start(ctx.currentTime + t);
+      crank.stop(ctx.currentTime + t + 0.1);
+    });
+
+    // Ignition roar flare
+    const roarStart = 0.45;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc1.type = "sawtooth";
+    osc2.type = "triangle";
+
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(150, ctx.currentTime + roarStart);
+    filter.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + roarStart + 0.35);
+    filter.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + roarStart + 1.2);
+
+    osc1.frequency.setValueAtTime(90, ctx.currentTime + roarStart);
+    osc1.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + roarStart + 0.35);
+    osc1.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + roarStart + 1.2);
+
+    osc2.frequency.setValueAtTime(92, ctx.currentTime + roarStart);
+    osc2.frequency.exponentialRampToValueAtTime(385, ctx.currentTime + roarStart + 0.35);
+    osc2.frequency.exponentialRampToValueAtTime(112, ctx.currentTime + roarStart + 1.2);
+
+    gain.gain.setValueAtTime(0.01, ctx.currentTime + roarStart);
+    gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + roarStart + 0.25);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + roarStart + 1.4);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(ctx.currentTime + roarStart);
+    osc2.start(ctx.currentTime + roarStart);
+    osc1.stop(ctx.currentTime + roarStart + 1.45);
+    osc2.stop(ctx.currentTime + roarStart + 1.45);
+  } catch (e) {}
+}
+
+/**
+ * Bespoke Velvet Presentation Box Opening Sound
+ */
+export function playBoxLidOpen() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    // Brass latch release click
+    const click = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    click.type = "triangle";
+    click.frequency.setValueAtTime(950, ctx.currentTime);
+    click.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.05);
+
+    clickGain.gain.setValueAtTime(0.2, ctx.currentTime);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+    click.connect(clickGain);
+    clickGain.connect(ctx.destination);
+    click.start();
+    click.stop(ctx.currentTime + 0.06);
+
+    // Velvet hinge suction glide
+    const glide = ctx.createOscillator();
+    const glideGain = ctx.createGain();
+    glide.type = "sine";
+    glide.frequency.setValueAtTime(350, ctx.currentTime + 0.03);
+    glide.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.35);
+
+    glideGain.gain.setValueAtTime(0.08, ctx.currentTime + 0.03);
+    glideGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+    glide.connect(glideGain);
+    glideGain.connect(ctx.destination);
+    glide.start(ctx.currentTime + 0.03);
+    glide.stop(ctx.currentTime + 0.42);
+  } catch (e) {}
+}

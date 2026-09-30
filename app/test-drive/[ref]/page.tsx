@@ -8,6 +8,7 @@ import {
   type TestDriveTrackingDTO,
 } from "@/lib/api/test-drives";
 import { Button } from "@/components/ui/button";
+import { BespokeKeyPresentationBox } from "@/components/orders/bespoke-key-presentation-box";
 import {
   CheckCircle2,
   Clock,
@@ -367,6 +368,16 @@ export default function TestDriveTrackingPage() {
             </div>
           </div>
         </div>
+
+        {/* Handcrafted Bespoke Presentation Box & Monogrammed Key Fob */}
+        <BespokeKeyPresentationBox
+          carName={`${data.carBrand} ${data.carName}`}
+          carBrand={data.carBrand}
+          clientName={data.customerName}
+          monogramText={data.customerName.split(" ").map(w => w[0]).join("") || "VIP"}
+          orderId={data.referenceCode}
+          carImage={`/cars/${data.carName}.jpg`}
+        />
 
         {/* Learning Architecture Callout: MongoDB Polyglot Persistence */}
         <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-gold/30 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

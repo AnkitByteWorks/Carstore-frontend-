@@ -10,6 +10,8 @@ export interface OrderRequest {
   deliveryCity: string;
   deliveryPincode: string;
   paymentMethod: string;
+  monogramText?: string;
+  monogramColor?: string;
 }
 
 export type OrderStatusType =
@@ -35,6 +37,8 @@ export interface Order {
   deliveryCity: string;
   deliveryPincode: string;
   paymentMethod: string;
+  monogramText?: string;
+  monogramColor?: string;
   status: OrderStatusType;
   orderedAt: string;
   updatedAt: string;

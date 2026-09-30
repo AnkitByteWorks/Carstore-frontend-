@@ -7,6 +7,7 @@ import { paymentsApi, type PaymentIntentResponse } from "@/lib/api/payments";
 import { useOrderEvents } from "@/lib/hooks/use-order-events";
 import { OrderTrackingStepper } from "@/components/orders/order-tracking-stepper";
 import { EnclosedCarrierMap } from "@/components/orders/enclosed-carrier-map";
+import { BespokeKeyPresentationBox } from "@/components/orders/bespoke-key-presentation-box";
 import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 import { LuxuryPaymentModal } from "@/components/checkout/luxury-payment-modal";
 import { Navbar } from "@/components/layout/navbar";
@@ -302,6 +303,16 @@ export default function OrderDetailsPage({
             </div>
           </div>
         </Card>
+
+        {/* Handcrafted Bespoke Presentation Box & Monogrammed Key Fob */}
+        <BespokeKeyPresentationBox
+          carName={order.carName}
+          carBrand={order.carName.split(" ")[0]}
+          clientName={order.customerName}
+          monogramText={order.monogramText || order.customerName.split(" ").map((w) => w[0]).join("") || "CS"}
+          orderId={order.id}
+          carImage={order.carImageUrl || `/cars/${order.carName}.jpg`}
+        />
 
         {/* Live GPS Enclosed Carrier Radar */}
         <EnclosedCarrierMap
