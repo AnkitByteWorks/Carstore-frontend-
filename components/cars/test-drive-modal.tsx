@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/auth-store";
 import type { Car } from "@/lib/types/car";
-import { testDrivesApi, type TestDriveResponse } from "@/lib/api/test-drives";
+import { testDrivesApi, type TestDriveResponse, type ExperienceType } from "@/lib/api/test-drives";
+import { analyticsApi } from "@/lib/api/analytics";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +28,7 @@ import {
   Clock,
   Car as CarIcon,
   Compass,
+  Flame,
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -35,6 +38,7 @@ interface TestDriveModalProps {
 }
 
 export function TestDriveModal({ car }: TestDriveModalProps) {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +51,7 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
   const [email, setEmail] = useState(user?.email || "");
   const [preferredDate, setPreferredDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("10:00 AM - 12:00 PM");
-  const [experienceType, setExperienceType] = useState<"SHOWROOM" | "DOORSTEP">("SHOWROOM");
+  const [experienceType, setExperienceType] = useState<ExperienceType>("SHOWROOM");
   const [notes, setNotes] = useState("");
 
   const [minDate] = useState(() => {
@@ -77,6 +81,20 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
 
       setBookingResult(response);
       toast.success("VIP Test Drive appointment confirmed!");
+      // Non-blocking MongoDB audit log dispatch
+      analyticsApi.logInteraction({
+        customerIdentifier: email.trim(),
+        customerName: customerName.trim(),
+        actionType: "VIP_TEST_DRIVE_REQUESTED",
+        carModel: `${car.brand} ${car.name}`,
+        carId: car.id,
+        eventMetadata: {
+          experienceType,
+          preferredDate,
+          timeSlot,
+          referenceCode: response.referenceCode,
+        },
+      });
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         toast.error("⚠️ Slot Unavailable: This VIP appointment slot was just reserved by another client under concurrent demand. Please select another slot.");
@@ -217,6 +235,8 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
                 <span className="text-gold font-medium">
                   {bookingResult.experienceType === "DOORSTEP"
                     ? "Chauffeured Doorstep Showcase"
+                    : bookingResult.experienceType === "TRACK"
+                    ? "Grand Prix Circuit Track"
                     : "Flagship Showroom Experience"}
                 </span>
               </div>
@@ -226,12 +246,24 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
               Our Senior Client Advisor will reach out on <span className="text-white font-medium">{bookingResult.phone}</span> within 2 hours to confirm concierge logistics and custom route planning.
             </p>
 
-            <Button
-              onClick={handleClose}
-              className="w-full gradient-gold text-slate-950 font-bold h-11"
-            >
-              Done
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button
+                onClick={() => {
+                  handleClose();
+                  router.push(`/test-drive/${bookingResult.referenceCode}`);
+                }}
+                className="flex-1 gradient-gold text-slate-950 font-bold h-11 flex items-center justify-center gap-2"
+              >
+                <Compass className="w-4 h-4" /> Live Concierge Tracking
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="border-slate-800 text-slate-300 hover:text-white h-11"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         ) : (
           /* Booking Form */
@@ -241,7 +273,7 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
               <Label className="text-xs text-slate-300 font-medium">
                 Select Experience Type *
               </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <label
                   onClick={() => setExperienceType("SHOWROOM")}
                   className={`flex flex-col p-3 rounded-xl border cursor-pointer transition-all ${
@@ -252,7 +284,7 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-white">
-                      Flagship Showroom
+                      Showroom
                     </span>
                     <input
                       type="radio"
@@ -264,7 +296,7 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
                     />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Visit {car.showroomLocation} with private salon & lounge
+                    Salon lounge in {car.showroomLocation}
                   </p>
                 </label>
 
@@ -278,7 +310,7 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-white">
-                      Doorstep Showcase
+                      Doorstep
                     </span>
                     <input
                       type="radio"
@@ -290,7 +322,33 @@ export function TestDriveModal({ car }: TestDriveModalProps) {
                     />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Delivered directly to your residence or office
+                    Delivered to your residence/estate
+                  </p>
+                </label>
+
+                <label
+                  onClick={() => setExperienceType("TRACK")}
+                  className={`flex flex-col p-3 rounded-xl border cursor-pointer transition-all ${
+                    experienceType === "TRACK"
+                      ? "bg-gold/10 border-gold shadow-md shadow-gold/5"
+                      : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-white flex items-center gap-1">
+                      <Flame className="w-3.5 h-3.5 text-amber-400" /> Track Day
+                    </span>
+                    <input
+                      type="radio"
+                      name="experienceType"
+                      value="TRACK"
+                      checked={experienceType === "TRACK"}
+                      onChange={() => setExperienceType("TRACK")}
+                      className="accent-amber-400 h-4 w-4"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    FIA circuit with telemetry & pilot
                   </p>
                 </label>
               </div>
