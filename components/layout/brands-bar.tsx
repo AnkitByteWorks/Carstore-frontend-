@@ -1,31 +1,34 @@
+import Link from "next/link";
+
 const brands = [
+  "Bugatti",
+  "Koenigsegg",
   "Ferrari",
   "Lamborghini",
   "Porsche",
-  "Bugatti",
   "Rolls-Royce",
   "McLaren",
   "Bentley",
-  "Koenigsegg",
   "Aston Martin",
   "Mercedes-AMG",
 ];
 
 export function BrandsBar() {
   return (
-    <section className="py-10 border-y border-slate-800 bg-slate-950/60">
+    <section className="py-8 border-y border-white/[0.06] bg-[#050505] backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="text-center text-xs uppercase tracking-[0.3em] text-slate-500 font-medium mb-6">
-          Trusted by the World&apos;s Finest Marques
+        <p className="text-center text-[11px] uppercase tracking-[0.35em] text-amber-400/70 font-semibold mb-5">
+          Curated Provenance · World&apos;s Finest Marques
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 sm:gap-x-12 gap-y-3">
           {brands.map((brand) => (
-            <span
+            <Link
               key={brand}
-              className="font-playfair text-base md:text-lg text-slate-500 hover:text-gold transition-colors duration-300 cursor-default tracking-wide"
+              href={`/cars?brand=${encodeURIComponent(brand)}`}
+              className="font-playfair text-sm sm:text-base md:text-lg text-slate-400 hover:text-amber-300 transition-all duration-300 tracking-wide hover:scale-105"
             >
               {brand}
-            </span>
+            </Link>
           ))}
         </div>
       </div>

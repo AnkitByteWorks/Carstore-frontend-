@@ -27,7 +27,7 @@ export function TrendingCars() {
   }
 
   return (
-    <section className="py-16 bg-gradient-to-b from-slate-950 via-slate-900/50 to-slate-950 border-t border-slate-900">
+    <section className="py-16 bg-gradient-to-b from-[#050505] via-[#09090c] to-[#050505] border-t border-white/[0.06]">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">

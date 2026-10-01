@@ -8,7 +8,12 @@
 @layer base {
   :root {
     --luxury-gold: 45 80% 55%;
-    --luxury-dark: 222 47% 11%;
+    --luxury-dark: 0 0% 2%;
+  }
+
+  body {
+    background-color: #050505;
+    color: #f8fafc;
   }
 }
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function CTA() {
   return (
-    <section className="relative py-24 overflow-hidden border-y border-slate-800">
+    <section className="relative py-24 overflow-hidden border-y border-white/[0.08]">
       {/* Background */}
       <div
         className="absolute inset-0 z-0"
@@ -15,7 +15,7 @@ export function CTA() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-slate-950/75" />
+        <div className="absolute inset-0 bg-[#050505]/85" />
       </div>
 
       {/* Content */}

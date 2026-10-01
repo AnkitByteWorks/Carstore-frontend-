@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${playfair.variable}`}
     >
-      <body className="font-sans antialiased bg-slate-950 text-white">
+      <body className="font-sans antialiased bg-[#050505] text-white">
         <LuxurySpotlight />
         <Providers>
           {children}
