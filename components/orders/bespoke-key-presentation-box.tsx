@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Key,
   Unlock,
@@ -9,14 +9,9 @@ import {
   Flame,
   Radio,
   Sparkles,
-  ShieldCheck,
   ChevronDown,
-  Volume2,
-  Check,
-  Car as CarIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   playKeyUnlockChirp,
   playKeyLockThud,

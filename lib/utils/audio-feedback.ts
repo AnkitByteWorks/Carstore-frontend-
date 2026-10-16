@@ -7,7 +7,9 @@ let audioCtx: AudioContext | null = null;
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!audioCtx) {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AudioCtx) {
       audioCtx = new AudioCtx();
     }
@@ -46,7 +48,7 @@ export function playMechanicalClick() {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.045);
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -86,7 +88,7 @@ export function playDoorThud() {
     latchGain.connect(ctx.destination);
     latchOsc.start();
     latchOsc.stop(ctx.currentTime + 0.07);
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -113,7 +115,7 @@ export function playChimeSound() {
         osc.stop(ctx.currentTime + 0.65);
       }, i * 70);
     });
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -161,11 +163,11 @@ export function playLaunchSpool(durationSec: number = 2.5) {
           try {
             osc1.stop();
             osc2.stop();
-          } catch (e) {}
+          } catch {}
         }, 120);
-      } catch (e) {}
+      } catch {}
     };
-  } catch (e) {
+  } catch {
     return () => {};
   }
 }
@@ -227,7 +229,7 @@ class AmbientSoundscapePlayer {
       });
 
       this.isPlaying = true;
-    } catch (e) {}
+    } catch {}
   }
 
   stop() {
@@ -241,12 +243,12 @@ class AmbientSoundscapePlayer {
         this.oscillators.forEach((osc) => {
           try {
             osc.stop();
-          } catch (e) {}
+          } catch {}
         });
         this.oscillators = [];
         this.isPlaying = false;
       }, 1300);
-    } catch (e) {
+    } catch {
       this.isPlaying = false;
     }
   }
@@ -291,7 +293,7 @@ export function playKeyUnlockChirp() {
       osc.start(ctx.currentTime + offset);
       osc.stop(ctx.currentTime + offset + 0.055);
     });
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -329,7 +331,7 @@ export function playKeyLockThud() {
     chirpGain.connect(ctx.destination);
     chirp.start(ctx.currentTime + 0.04);
     chirp.stop(ctx.currentTime + 0.095);
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -393,7 +395,7 @@ export function playEngineIgnitionRoar() {
     osc2.start(ctx.currentTime + roarStart);
     osc1.stop(ctx.currentTime + roarStart + 1.45);
     osc2.stop(ctx.currentTime + roarStart + 1.45);
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -433,5 +435,5 @@ export function playBoxLidOpen() {
     glideGain.connect(ctx.destination);
     glide.start(ctx.currentTime + 0.03);
     glide.stop(ctx.currentTime + 0.42);
-  } catch (e) {}
+  } catch {}
 }

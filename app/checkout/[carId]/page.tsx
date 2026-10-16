@@ -212,8 +212,9 @@ function CheckoutContent({
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Full Name</Label>
+                    <Label htmlFor="customerName" className="text-slate-300">Full Name</Label>
                     <Input
+                      id="customerName"
                       {...register("customerName")}
                       placeholder="Ankit Sharma"
                       className="bg-slate-950 border-slate-800 text-white"
@@ -227,10 +228,11 @@ function CheckoutContent({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Email</Label>
+                      <Label htmlFor="customerEmail" className="text-slate-300">Email</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                         <Input
+                          id="customerEmail"
                           {...register("customerEmail")}
                           type="email"
                           placeholder="ankit@example.com"
@@ -245,10 +247,11 @@ function CheckoutContent({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Phone</Label>
+                      <Label htmlFor="customerPhone" className="text-slate-300">Phone</Label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                         <Input
+                          id="customerPhone"
                           {...register("customerPhone")}
                           placeholder="9876543210"
                           className="pl-10 bg-slate-950 border-slate-800 text-white"
@@ -273,8 +276,9 @@ function CheckoutContent({
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Full Address</Label>
+                    <Label htmlFor="deliveryAddress" className="text-slate-300">Full Address</Label>
                     <Input
+                      id="deliveryAddress"
                       {...register("deliveryAddress")}
                       placeholder="123 Marine Drive, Apartment 4B"
                       className="bg-slate-950 border-slate-800 text-white"
@@ -288,8 +292,9 @@ function CheckoutContent({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">City</Label>
+                      <Label htmlFor="deliveryCity" className="text-slate-300">City</Label>
                       <Input
+                        id="deliveryCity"
                         {...register("deliveryCity")}
                         placeholder="Mumbai"
                         className="bg-slate-950 border-slate-800 text-white"
@@ -302,8 +307,9 @@ function CheckoutContent({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Pincode</Label>
+                      <Label htmlFor="deliveryPincode" className="text-slate-300">Pincode</Label>
                       <Input
+                        id="deliveryPincode"
                         {...register("deliveryPincode")}
                         placeholder="400001"
                         className="bg-slate-950 border-slate-800 text-white"

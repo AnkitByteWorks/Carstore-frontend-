@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Sparkles,
-  Zap,
   Gauge,
   ShieldCheck,
   Compass,
@@ -347,7 +346,10 @@ export function Hero() {
 
   // Randomize initial car safely upon client-side mount
   useEffect(() => {
-    setCurrentIndex(Math.floor(Math.random() * HERO_MARQUES.length));
+    const handle = requestAnimationFrame(() => {
+      setCurrentIndex(Math.floor(Math.random() * HERO_MARQUES.length));
+    });
+    return () => cancelAnimationFrame(handle);
   }, []);
 
   // Completely automatic, uninterrupted random rotation through all 20 cars every 3.0 seconds

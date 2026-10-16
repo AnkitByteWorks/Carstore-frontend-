@@ -16,18 +16,21 @@ export function GoldParticles({ count = 20 }: { count?: number }) {
   const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
-    const p: Particle[] = [];
-    for (let i = 0; i < count; i++) {
-      p.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 1,
-        duration: Math.random() * 12 + 10,
-        delay: Math.random() * 5,
-      });
-    }
-    setParticles(p);
+    const handle = requestAnimationFrame(() => {
+      const p: Particle[] = [];
+      for (let i = 0; i < count; i++) {
+        p.push({
+          id: i,
+          x: Math.random() * 100,
+          y: Math.random() * 100,
+          size: Math.random() * 3 + 1,
+          duration: Math.random() * 12 + 10,
+          delay: Math.random() * 5,
+        });
+      }
+      setParticles(p);
+    });
+    return () => cancelAnimationFrame(handle);
   }, [count]);
 
   return (

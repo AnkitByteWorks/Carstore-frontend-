@@ -8,27 +8,23 @@ import {
   Thermometer,
   Gauge,
   Radio,
-  CheckCircle2,
-  Navigation,
   Lock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 interface EnclosedCarrierMapProps {
-  orderId: number;
+  orderId?: number;
   deliveryCity: string;
-  status: string;
+  status?: string;
 }
 
 export function EnclosedCarrierMap({
-  orderId,
   deliveryCity,
-  status,
 }: EnclosedCarrierMapProps) {
   const [carrierSpeed, setCarrierSpeed] = useState(82);
   const [internalTemp, setInternalTemp] = useState(20.4);
-  const [progressPercent, setProgressPercent] = useState(65);
+  const [progressPercent] = useState(65);
 
   useEffect(() => {
     // Dynamic telemetry drift
@@ -39,8 +35,6 @@ export function EnclosedCarrierMap({
 
     return () => clearInterval(interval);
   }, []);
-
-  const isTransit = status === "SHIPPED" || status === "PROCESSING" || status === "CONFIRMED";
 
   return (
     <Card className="bg-slate-900 border-slate-800 p-6 rounded-2xl overflow-hidden relative shadow-2xl space-y-6">

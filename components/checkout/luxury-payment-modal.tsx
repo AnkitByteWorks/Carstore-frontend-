@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  ShieldCheck,
   CreditCard,
   Loader2,
   CheckCircle2,
@@ -47,7 +46,7 @@ export function LuxuryPaymentModal({
   onSuccess,
 }: LuxuryPaymentModalProps) {
   const router = useRouter();
-  const [cardNumber, setCardNumber] = useState("4532 •••• •••• 8888");
+  const [cardNumber] = useState("4532 •••• •••• 8888");
   const [cardHolder, setCardHolder] = useState("VIP CENTURION CLIENT");
   const [expiry, setExpiry] = useState("12/28");
   const [cvv, setCvv] = useState("888");

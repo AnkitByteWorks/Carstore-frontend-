@@ -19,7 +19,9 @@ export function useOrderEvents({
   const [liveOrder, setLiveOrder] = useState<Order | null>(null);
   const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
   const onStatusUpdateRef = useRef(onStatusUpdate);
-  onStatusUpdateRef.current = onStatusUpdate;
+  useEffect(() => {
+    onStatusUpdateRef.current = onStatusUpdate;
+  }, [onStatusUpdate]);
 
   useEffect(() => {
     const numericOrderId = Number(orderId);
@@ -98,7 +100,7 @@ export function useOrderEvents({
                   }
                   onStatusUpdateRef.current?.(updatedOrder);
                 }
-              } catch (e) {
+              } catch {
                 // Ignore unparseable or raw text ping
               }
             }

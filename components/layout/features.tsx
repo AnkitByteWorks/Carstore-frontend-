@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Gauge,
-  ShieldCheck,
   Key,
   Truck,
   Lock,
@@ -13,7 +12,6 @@ import {
   Radio,
   Zap,
   CheckCircle2,
-  SlidersHorizontal,
 } from "lucide-react";
 
 export function Features() {
